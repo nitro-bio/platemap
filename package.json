@@ -2,11 +2,11 @@
   "type": "module",
   "name": "@nitro-bio/platemap",
   "private": false,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "build:ci": "vite build && pnpm build-css",
     "build": "pnpm lint && vite build && pnpm build-css",
-    "build-css": "npx tailwindcss -o ./nitro.css --minify && mv ./nitro.css ./dist/nitro.css",
+    "build-css": "npx @tailwindcss/cli -i ./src/index.css -o ./nitro-platemap.css && mv ./nitro-platemap.css ./dist/nitro-platemap.css",
     "dev": "vite --port 3000",
     "format": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\" --config package.json",
     "format:fix": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\" --config package.json",
@@ -56,8 +56,8 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/nitr-platemap.es.js",
-      "require": "./dist/nitr-platemap.umd.js",
+      "import": "./dist/nitro-platemap.es.js",
+      "require": "./dist/nitro-platemap.umd.js",
       "types": "./dist/index.d.ts"
     },
     "./dist/nitro-platemap.css": {
