@@ -135,7 +135,7 @@ export const Plate = <WellMetaT extends Record<string, string>>({
                 className={cn(
                   "flex items-end justify-center",
                   plateSize > 96 && "break-all px-1 text-[0.6rem]",
-                  "border-b border-l border-r border-noir-300 pb-1 text-noir-400 dark:border-noir-500 dark:text-noir-300",
+                  "border-noir-300 text-noir-400 dark:border-noir-500 dark:text-noir-300 border-b border-l border-r pb-1",
                   "hover:bg-brand-200 hover:text-noir-800 dark:text-noir-600 hover:dark:bg-brand-600 hover:dark:text-noir-200",
                 )}
                 onClick={() => {
@@ -162,7 +162,7 @@ export const Plate = <WellMetaT extends Record<string, string>>({
                 className={cn(
                   "ml-auto px-1",
                   plateSize > 96 && "text-[0.6rem]",
-                  "border-b border-r border-t border-noir-300 pr-1 text-noir-400 dark:border-noir-500 dark:text-noir-300",
+                  "border-noir-300 text-noir-400 dark:border-noir-500 dark:text-noir-300 border-b border-r border-t pr-1",
                   "hover:bg-brand-200 hover:text-noir-800 dark:text-noir-600 hover:dark:bg-brand-600 hover:dark:text-noir-200",
                 )}
               >
@@ -230,10 +230,10 @@ const Well = createSelectable(
             toggleSelection(index);
           }}
           className={cn(
-            "group my-auto flex h-full w-full cursor-pointer items-center justify-center bg-noir-100 dark:bg-noir-800",
+            "bg-noir-100 dark:bg-noir-800 group my-auto flex h-full w-full cursor-pointer items-center justify-center",
             "aspect-square max-h-full min-h-px min-w-px max-w-full rounded-full",
             "transition-all duration-300 ease-in-out",
-            "border border-noir-800 dark:border-noir-200",
+            "border-noir-800 dark:border-noir-200 border",
             isExcluded ? "" : "hover:scale-110",
             "relative overflow-hidden",
           )}

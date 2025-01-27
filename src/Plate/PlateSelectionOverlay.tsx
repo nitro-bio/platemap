@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { classNames } from "@ninjha01/nitro-ui";
 import { useStateRef } from "@hooks/useStateRef";
+import { RefObject } from "react";
+import { cn } from "../utils";
 interface Coor {
   x: number;
   y: number;
@@ -13,7 +14,7 @@ export const PlateSelectionOverlay = ({
   wellBoxes,
   toggleSelection,
 }: {
-  plateRef: React.RefObject<HTMLDivElement>;
+  plateRef: RefObject<HTMLDivElement>;
   wellBoxes: DOMRect[];
   toggleSelection: (wells: Set<number>) => void;
 }) => {
@@ -78,7 +79,7 @@ export const PlateSelectionOverlay = ({
     <>
       {start && end && (
         <div
-          className={classNames(
+          className={cn(
             "border-2  text-white ",
             area < INACTIVE_AREA_THRESHOLD
               ? "border-red-400/10 bg-red-700/10 dark:bg-red-300/10"
@@ -148,7 +149,7 @@ function isIntersecting(boxA: Box, boxB: Box) {
   );
 }
 
-export const useMouseRect = ({
+const useMouseRect = ({
   onMouseUp,
   onMouseDown,
   onMouseMove,

@@ -23,7 +23,7 @@ const App = () => {
     plateActions: {
       setSelectionWithExcluded,
       setActiveWellAnnotation,
-      setExcludedWells,
+      // setExcludedWells,
       setWellAnnotations,
     },
   } = usePlateReducer<AnnotationMeta>({
