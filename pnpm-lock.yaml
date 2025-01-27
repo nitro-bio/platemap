@@ -8,6 +8,12 @@ importers:
 
   .:
     dependencies:
+      papaparse:
+        specifier: ^5.5.1
+        version: 5.5.1
+      react-selectable:
+        specifier: ^2.1.1
+        version: 2.1.1
       tailwindcss:
         specifier: ^4.0.0
         version: 4.0.0
@@ -829,6 +835,9 @@ packages:
     resolution: {integrity: sha512-/Eaoq+QyLSiXQ4lyYV23f14mZRQcXnxfHrN0vCai+ak9G0pp9iEQukIIZq5NccEvwRB8PUnZT0KsOoDCINS1qQ==}
     engines: {node: '>=18'}
 
+  papaparse@5.5.1:
+    resolution: {integrity: sha512-EuEKUhyxrHVozD7g3/ztsJn6qaKse8RPfR6buNB2dMJvdtXNhcw8jccVi/LxNEY3HVrV6GO6Z4OoeCG9Iy9wpA==}
+
   path-key@3.1.1:
     resolution: {integrity: sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q==}
     engines: {node: '>=8'}
@@ -935,6 +944,9 @@ packages:
   react-refresh@0.14.2:
     resolution: {integrity: sha512-jCvmsr+1IUSMUyzOkRcvnVbX3ZYC6g9TDrDbFuFmRDq7PD4yaGbLKNQL6k2jnArV8hjYxh7hVhAZB6s9HDGpZA==}
     engines: {node: '>=0.10.0'}
+
+  react-selectable@2.1.1:
+    resolution: {integrity: sha512-5W7WrC+TCchIwE8wDQhV5F1iJXNZJN09RsIa7kgl8P8tcG7UOYSkK6M3Jundec90mB7iN+KOLeLivSRdf9WrxQ==}
 
   react@18.3.1:
     resolution: {integrity: sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==}
@@ -1828,6 +1840,8 @@ snapshots:
     dependencies:
       yocto-queue: 1.1.1
 
+  papaparse@5.5.1: {}
+
   path-key@3.1.1: {}
 
   path-key@4.0.0: {}
@@ -1877,6 +1891,8 @@ snapshots:
   react-is@18.3.1: {}
 
   react-refresh@0.14.2: {}
+
+  react-selectable@2.1.1: {}
 
   react@18.3.1:
     dependencies:

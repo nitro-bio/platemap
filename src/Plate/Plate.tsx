@@ -1,7 +1,7 @@
-import { classNames } from "@ninjha01/nitro-ui";
 import { SelectableGroup, createSelectable } from "react-selectable";
 import { PlateSelection, PlateSize, WellAnnotation } from "./schemas";
 import { getRowLabel, indexToExcelCell, plateSizeToRowsCols } from "./utils";
+import { cn } from "../utils";
 
 export interface PlateProps<WellMetaT extends Record<string, string>> {
   plateSize: PlateSize;
@@ -115,10 +115,10 @@ export const Plate = <WellMetaT extends Record<string, string>>({
       <SelectableGroup
         onEndSelection={handleSelection}
         tolerance={selectionTolerance}
-        className={classNames("pt-6", className)}
+        className={cn("pt-6", className)}
       >
         <div
-          className={classNames(
+          className={cn(
             "grid gap-2",
             "select-none",
             "text-xs md:text-sm lg:text-base",
@@ -127,14 +127,12 @@ export const Plate = <WellMetaT extends Record<string, string>>({
           )}
         >
           <div
-            className={classNames(
-              "col-span-full col-start-2 grid grid-cols-subgrid",
-            )}
+            className={cn("col-span-full col-start-2 grid grid-cols-subgrid")}
           >
             {colLabels.map((colLabel) => (
               <button
                 key={`col-${colLabel}`}
-                className={classNames(
+                className={cn(
                   "flex items-end justify-center",
                   plateSize > 96 && "break-all px-1 text-[0.6rem]",
                   "border-b border-l border-r border-noir-300 pb-1 text-noir-400 dark:border-noir-500 dark:text-noir-300",
@@ -149,7 +147,7 @@ export const Plate = <WellMetaT extends Record<string, string>>({
             ))}
           </div>
           <div
-            className={classNames(
+            className={cn(
               "col-span-1 grid grid-cols-subgrid gap-2 ",
 
               "text-noir-600 dark:text-noir-300",
@@ -161,7 +159,7 @@ export const Plate = <WellMetaT extends Record<string, string>>({
                 onClick={() => {
                   toggleRowInSelection(rowLabels.indexOf(rowLabel));
                 }}
-                className={classNames(
+                className={cn(
                   "ml-auto px-1",
                   plateSize > 96 && "text-[0.6rem]",
                   "border-b border-r border-t border-noir-300 pr-1 text-noir-400 dark:border-noir-500 dark:text-noir-300",
@@ -220,7 +218,7 @@ const Well = createSelectable(
     return (
       <div className="relative isolate h-full ">
         <div
-          className={classNames(
+          className={cn(
             "absolute -inset-1",
             isSelected && "bg-brand-200/80 dark:bg-brand-600/40 ",
             isExcluded && "bg-noir-300 dark:bg-noir-700",
@@ -231,7 +229,7 @@ const Well = createSelectable(
           onClick={() => {
             toggleSelection(index);
           }}
-          className={classNames(
+          className={cn(
             "group my-auto flex h-full w-full cursor-pointer items-center justify-center bg-noir-100 dark:bg-noir-800",
             "aspect-square max-h-full min-h-px min-w-px max-w-full rounded-full",
             "transition-all duration-300 ease-in-out",
@@ -241,7 +239,7 @@ const Well = createSelectable(
           )}
         >
           <span
-            className={classNames(
+            className={cn(
               plateSize === 24 && "text-2xl",
               plateSize === 48 && "text-xl",
               plateSize === 96 && "text-sm",
@@ -257,7 +255,7 @@ const Well = createSelectable(
           {annotations.map((ann, index) => (
             <span
               key={ann.id}
-              className={classNames(
+              className={cn(
                 isExcluded ? "" : ann.annotationStyle.wellClassName,
                 isExcluded ? "" : "group-hover:opacity-50",
                 "opacity-40 dark:opacity-40",
