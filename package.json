@@ -1,0 +1,71 @@
+{
+  "name": "@nitro-bio/platemap",
+  "private": false,
+  "version": "1.0.0",
+  "scripts": {
+    "build:ci": "vite build && pnpm build-css",
+    "build": "pnpm lint && vite build && pnpm build-css",
+    "build-css": "npx tailwindcss -o ./nitro.css --minify && mv ./nitro.css ./dist/nitro.css",
+    "dev": "pnpm storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "format": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\" --config package.json",
+    "format:fix": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\" --config package.json",
+    "lint": "tsc && eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "lint:watch": "nodemon --watch src --ext js,jsx,ts,tsx --exec pnpm lint",
+    "prepublishOnly": "pnpm lint && pnpm format && pnpm build",
+    "build:watch": "nodemon --watch src --ext js,jsx,ts,tsx,json,css,scss,html --exec pnpm build",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "tailwindcss": "^4.0.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9",
+    "prettier": "^3.4.2",
+    "prettier-plugin-tailwindcss": "^0.5.14",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.11",
+    "vitest": "^1.6.0"
+  },
+  "license": "UNLICENSED",
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "styles": "./dist/nitro-platemap.css",
+  "main": "./dist/nitro-platemap.umd.js",
+  "module": "./dist/nitro-platemap.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/nitr-platemap.es.js",
+      "require": "./dist/nitr-platemap.umd.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./dist/nitro-platemap.css": {
+      "import": "./dist/nitro-platemap.css",
+      "require": "./dist/nitro-platemap.css"
+    }
+  },
+  "description": "Platemap React Component",
+  "keywords": [
+    "ui",
+    "components",
+    "platemap"
+  ],
+  "author": "Nishant Jha",
+  "prettier": {
+    "plugins": [
+      "prettier-plugin-tailwindcss"
+    ]
+  }
+}
