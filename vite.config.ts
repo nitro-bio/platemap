@@ -1,4 +1,3 @@
-/// <reference types="vitest" />
 import react from "@vitejs/plugin-react";
 import path from "path";
 import tailwindcss from "@tailwindcss/vite";
@@ -26,13 +25,13 @@ export default defineConfig({
       },
     },
   },
-  test: {
-    globals: true,
-    environment: "jsdom",
-    setupFiles: ["./setupTests.ts"],
-    env: {
-      mode: "test",
-      baseUrl: "http://localhost:6006",
-    },
-  },
+  // test: {
+  //   globals: true,
+  //   environment: "jsdom",
+  //   setupFiles: ["./setupTests.ts"],
+  //   env: {
+  //     mode: "test",
+  //     baseUrl: "http://localhost:6006",
+  //   },
+  // },
 });
