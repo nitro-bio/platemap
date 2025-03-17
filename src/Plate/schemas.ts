@@ -84,11 +84,10 @@ export const ANNOTATION_STYLES = [
 
 export interface WellAnnotation<T extends Record<string, string>> {
   id: string;
-  wells: number[];
   label: string;
   annotationStyle: AnnotationStyle;
   className?: string;
-  metadata?: T;
+  wellData?: Record<number, T | undefined>;
 }
 
 export type WellAnnotationCSVRow = {

@@ -211,7 +211,7 @@ const useMouseRect = ({
       element?.removeEventListener("mousemove", _onMouseMove);
       window.removeEventListener("mouseup", _onMouseUp);
     };
-  }, [parentRef?.current]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return { start, end };
 };
 

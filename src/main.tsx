@@ -11,6 +11,7 @@ const root = ReactDOM.createRoot(rootElement);
 
 type AnnotationMeta = Record<string, string>;
 
+// eslint-disable-next-line react-refresh/only-export-components
 const App = () => {
   const {
     plateState: {
@@ -27,13 +28,12 @@ const App = () => {
       setWellAnnotations,
     },
   } = usePlateReducer<AnnotationMeta>({
-    initialPlateSize: 96,
+    initialPlateSize: 48,
   });
   return (
-    <div className="text-4xl">
-      <h1>My App</h1>
+    <div className="h-screen overflow-hidden text-4xl">
       <Plate
-        className="mr-2 pb-8"
+        className="h-full"
         plateSize={plateSize}
         excludedWells={excludedWells}
         selection={selection}

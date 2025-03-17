@@ -143,11 +143,21 @@ export const randomizeWellAnnotations = <
   );
   const shuffledWells = availableWells.sort(() => Math.random() - 0.5);
   const shuffledWellMap = new Map<number, number>();
-  const currentWells = new Set(
-    wellAnnotations
-      .flatMap((annotation) => annotation.wells)
-      .filter((well) => !excludedWells.includes(well) || well >= plateSize),
-  );
+
+  // Collect all wells from wellData properties
+  const currentWells = new Set<number>();
+  wellAnnotations.forEach((annotation) => {
+    if (annotation.wellData) {
+      Object.keys(annotation.wellData)
+        .map((k) => parseInt(k, 10))
+        .filter(
+          (well) =>
+            !isNaN(well) && !excludedWells.includes(well) && well < plateSize,
+        )
+        .forEach((well) => currentWells.add(well));
+    }
+  });
+
   currentWells.forEach((well) => {
     const destinationWell = shuffledWells.pop();
     if (destinationWell === undefined) {
@@ -158,21 +168,33 @@ export const randomizeWellAnnotations = <
     shuffledWellMap.set(well, destinationWell);
   });
 
-  return wellAnnotations.map((annotation) => ({
-    ...annotation,
-    wells: annotation.wells.map((well) => {
-      if (excludedWells.includes(well)) {
-        return well;
+  return wellAnnotations.map((annotation) => {
+    if (!annotation.wellData) return annotation;
+
+    const newWellData: Record<number, WellMetaT | undefined> = {};
+
+    Object.entries(annotation.wellData).forEach(([wellIndexStr, metadata]) => {
+      const wellIndex = parseInt(wellIndexStr, 10);
+      if (isNaN(wellIndex)) return;
+
+      if (excludedWells.includes(wellIndex)) {
+        newWellData[wellIndex] = metadata;
+      } else {
+        const destinationWell = shuffledWellMap.get(wellIndex);
+        if (destinationWell === undefined) {
+          throw new Error(
+            `Failed to map well ${wellIndex} to a destination well. This is likely due to an invalid well index or excluded wells.`,
+          );
+        }
+        newWellData[destinationWell] = metadata;
       }
-      const destinationWell = shuffledWellMap.get(well);
-      if (destinationWell === undefined) {
-        throw new Error(
-          `Failed to map well ${well} to a destination well. This is likely due to an invalid well index or excluded wells.`,
-        );
-      }
-      return destinationWell;
-    }),
-  }));
+    });
+
+    return {
+      ...annotation,
+      wellData: newWellData,
+    };
+  });
 };
 export const getExcelLabelForWells = (
   wells: number[],
@@ -229,7 +251,12 @@ export const wellAnnotationsToList = (
 
   // Populate the map with annotations
   wellAnnotations.map((annotation) => {
-    annotation.wells.forEach((wellIndex) => {
+    if (!annotation.wellData) return;
+
+    Object.entries(annotation.wellData).forEach(([wellIndexStr, metadata]) => {
+      const wellIndex = parseInt(wellIndexStr, 10);
+      if (isNaN(wellIndex)) return;
+
       const prevAnnotations = annotationMap.get(wellIndex)?.Annotations
         ? `${annotationMap.get(wellIndex)?.Annotations} |`
         : "";
@@ -237,7 +264,7 @@ export const wellAnnotationsToList = (
         ...annotationMap.get(wellIndex),
         Well: indexToExcelCell(wellIndex, plateSize),
         Annotations: `${prevAnnotations} ${annotation.label}`,
-        ...annotation.metadata,
+        ...metadata,
       };
 
       annotationMap.set(wellIndex, update);
@@ -261,14 +288,18 @@ export const wellAnnotationsToCSV = (
   Array.from({ length: rows }).forEach((_, i) => {
     Array.from({ length: cols }).forEach((_, j) => {
       const index = i * cols + j;
-      const annotationsForWell = wellAnnotations.filter((ann) =>
-        ann.wells.includes(index),
+      const annotationsForWell = wellAnnotations.filter(
+        (ann) =>
+          ann.wellData && Object.keys(ann.wellData).includes(index.toString()),
       );
       const annotationString = annotationsForWell.map((ann) => {
-        const metadataString = Object.entries(ann.metadata ?? {})
-          .map(([key, value]) => `${key}: ${value}`)
-          .join("; ");
-        const annStr = `${ann.label} (${metadataString})`;
+        const metadata = ann.wellData?.[index];
+        const metadataString = metadata
+          ? Object.entries(metadata)
+              .map(([key, value]) => `${key}: ${value}`)
+              .join("; ")
+          : "";
+        const annStr = `${ann.label}${metadataString ? ` (${metadataString})` : ""}`;
         return annStr;
       });
 

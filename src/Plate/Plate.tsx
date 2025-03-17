@@ -1,3 +1,4 @@
+import React from "react";
 import { SelectableGroup, createSelectable } from "react-selectable";
 import { PlateSelection, PlateSize, WellAnnotation } from "./schemas";
 import { getRowLabel, indexToExcelCell, plateSizeToRowsCols } from "./utils";
@@ -24,6 +25,7 @@ export interface PlateProps<WellMetaT extends Record<string, string>> {
   className?: string;
   selectionTolerance?: number;
   buildUpSelection?: boolean;
+  hideWellLabels?: boolean;
 }
 
 export const Plate = <WellMetaT extends Record<string, string>>({
@@ -35,6 +37,7 @@ export const Plate = <WellMetaT extends Record<string, string>>({
   setSelection,
   buildUpSelection,
   selectionTolerance = 20,
+  hideWellLabels,
 }: PlateProps<WellMetaT>) => {
   const { rows, cols } = plateSizeToRowsCols(plateSize);
   const rowLabels: string[] = Array.from({ length: rows }, (_, i) =>
@@ -111,88 +114,83 @@ export const Plate = <WellMetaT extends Record<string, string>>({
   };
 
   return (
-    <>
-      <SelectableGroup
-        onEndSelection={handleSelection}
-        tolerance={selectionTolerance}
-        className={cn("pt-6", className)}
+    <SelectableGroup
+      onEndSelection={handleSelection}
+      tolerance={selectionTolerance}
+      className={cn(className, "aspect-[4/3] max-w-full")}
+    >
+      <div
+        className={cn(
+          "grid gap-2",
+          "select-none",
+          "text-xs md:text-sm lg:text-base",
+          gridClass,
+        )}
       >
+        <div className={cn("col-span-full col-start-2 grid grid-cols-subgrid")}>
+          {colLabels.map((colLabel) => (
+            <button
+              key={`col-${colLabel}`}
+              className={cn(
+                "flex items-end justify-center",
+                plateSize > 96 && "break-all px-1 text-[0.6rem]",
+                "border-noir-300 text-noir-400 dark:border-noir-500 dark:text-noir-300 border-b border-l border-r pb-1",
+                "hover:bg-brand-200 hover:text-noir-800 dark:text-noir-600 hover:dark:bg-brand-600 hover:dark:text-noir-200",
+              )}
+              onClick={() => {
+                toggleColumnInSelection(colLabels.indexOf(colLabel));
+              }}
+            >
+              {colLabel}
+            </button>
+          ))}
+        </div>
         <div
           className={cn(
-            "grid gap-2",
-            "select-none",
-            "text-xs md:text-sm lg:text-base",
-            plateSize > 96 && "px-4",
-            gridClass,
+            "col-span-1 grid gap-2 ",
+            "text-noir-600 dark:text-noir-300",
           )}
         >
-          <div
-            className={cn("col-span-full col-start-2 grid grid-cols-subgrid")}
-          >
-            {colLabels.map((colLabel) => (
-              <button
-                key={`col-${colLabel}`}
-                className={cn(
-                  "flex items-end justify-center",
-                  plateSize > 96 && "break-all px-1 text-[0.6rem]",
-                  "border-noir-300 text-noir-400 dark:border-noir-500 dark:text-noir-300 border-b border-l border-r pb-1",
-                  "hover:bg-brand-200 hover:text-noir-800 dark:text-noir-600 hover:dark:bg-brand-600 hover:dark:text-noir-200",
-                )}
-                onClick={() => {
-                  toggleColumnInSelection(colLabels.indexOf(colLabel));
-                }}
-              >
-                {colLabel}
-              </button>
-            ))}
-          </div>
-          <div
-            className={cn(
-              "col-span-1 grid grid-cols-subgrid gap-2 ",
-
-              "text-noir-600 dark:text-noir-300",
-            )}
-          >
-            {rowLabels.map((rowLabel) => (
-              <button
-                key={`row-${rowLabel}`}
-                onClick={() => {
-                  toggleRowInSelection(rowLabels.indexOf(rowLabel));
-                }}
-                className={cn(
-                  "ml-auto px-1",
-                  plateSize > 96 && "text-[0.6rem]",
-                  "border-noir-300 text-noir-400 dark:border-noir-500 dark:text-noir-300 border-b border-r border-t pr-1",
-                  "hover:bg-brand-200 hover:text-noir-800 dark:text-noir-600 hover:dark:bg-brand-600 hover:dark:text-noir-200",
-                )}
-              >
-                {rowLabel}
-              </button>
-            ))}
-          </div>
-
-          <div className="col-span-full col-start-2 grid grid-cols-subgrid gap-2 ">
-            {Array.from({ length: plateSize }).map((_, i) => {
-              const isSelected = selection?.wells.includes(i) ?? false;
-              const anns: WellAnnotation<WellMetaT>[] =
-                wellAnnotations?.filter((ann) => ann.wells.includes(i)) ?? [];
-              return (
-                <Well
-                  key={`well-${i}`}
-                  index={i}
-                  plateSize={plateSize}
-                  selectableKey={i}
-                  isSelected={isSelected}
-                  toggleSelection={toggleWellInSelection}
-                  annotations={anns}
-                  isExcluded={excludedWells.includes(i)}
-                />
-              );
-            })}
-          </div>
+          {rowLabels.map((rowLabel) => (
+            <button
+              key={`row-${rowLabel}`}
+              onClick={() => {
+                toggleRowInSelection(rowLabels.indexOf(rowLabel));
+              }}
+              className={cn(
+                "ml-auto px-1",
+                plateSize > 96 && "text-[0.6rem]",
+                "border-noir-300 text-noir-400 dark:border-noir-500 dark:text-noir-300 border-b border-r border-t pr-1",
+                "hover:bg-brand-200 hover:text-noir-800 dark:text-noir-600 hover:dark:bg-brand-600 hover:dark:text-noir-200",
+              )}
+            >
+              {rowLabel}
+            </button>
+          ))}
         </div>
-      </SelectableGroup>
-    </>
+
+        <div className="col-span-full col-start-2 grid grid-cols-subgrid gap-2 ">
+          {Array.from({ length: plateSize }).map((_, i) => {
+            const isSelected = selection?.wells.includes(i) ?? false;
+            const anns: WellAnnotation<WellMetaT>[] =
+              wellAnnotations?.filter((ann) => ann.wells.includes(i)) ?? [];
+            return (
+              <Well
+                key={`well-${i}`}
+                index={i}
+                plateSize={plateSize}
+                selectableKey={i}
+                isSelected={isSelected}
+                toggleSelection={toggleWellInSelection}
+                annotations={anns}
+                isExcluded={excludedWells.includes(i)}
+                hideWellLabels={hideWellLabels}
+              />
+            );
+          })}
+        </div>
+      </div>
+    </SelectableGroup>
   );
 };
 const Well = createSelectable(
@@ -204,6 +202,7 @@ const Well = createSelectable(
     isExcluded,
     toggleSelection,
     annotations,
+    hideWellLabels,
   }: {
     index: number;
     plateSize: PlateSize;
@@ -212,8 +211,8 @@ const Well = createSelectable(
     isSelected: boolean;
     isExcluded: boolean;
     toggleSelection: (well: number) => void;
-
     annotations: WellAnnotation<WellMetaT>[];
+    hideWellLabels?: boolean;
   }) => {
     return (
       <div className="relative isolate h-full ">
@@ -243,8 +242,9 @@ const Well = createSelectable(
               plateSize === 24 && "text-2xl",
               plateSize === 48 && "text-xl",
               plateSize === 96 && "text-sm",
-              plateSize === 384 && "hidden",
-              plateSize === 1536 && "hidden",
+              plateSize === 384 && "text-xs",
+              plateSize === 1536 && "text-[0.6rem]",
+              hideWellLabels && "hidden",
               isSelected
                 ? "text-black dark:text-white"
                 : "text-noir-600 dark:text-noir-300",

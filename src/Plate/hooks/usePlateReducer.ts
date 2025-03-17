@@ -97,7 +97,7 @@ export const usePlateReducer = <WellMetaT extends Record<string, string>>({
       return parseCSV<WellMetaT>(initialCSV, initialPlateSize);
     }
     return [];
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const initialState: PlateState<WellMetaT> = {
     plateSize: initialPlateSize,

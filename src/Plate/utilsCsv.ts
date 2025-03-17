@@ -51,6 +51,7 @@ export const parseCSV = <WellMetaT extends Record<string, string>>(
 
   const annMap: Record<string, WellAnnotation<WellMetaT>> = {};
   let unAssignedStyles = [...ANNOTATION_STYLES];
+
   data.forEach((row, i) => {
     const rowLabel = getRowLabel(i);
     Object.entries(row)
@@ -65,19 +66,40 @@ export const parseCSV = <WellMetaT extends Record<string, string>>(
         } else {
           const annLabels = (value ?? "").split(" | ");
           annLabels.forEach((annLabel) => {
-            if (!annMap[annLabel]) {
+            // Extract annotation label and metadata if present
+            const metadataMatch = annLabel.match(/(.+?) \((.+?)\)/);
+            const label = metadataMatch
+              ? metadataMatch[1].trim()
+              : annLabel.trim();
+            const metadataStr = metadataMatch ? metadataMatch[2] : "";
+
+            // Parse metadata key-value pairs
+            const metadata: Record<string, string> = {};
+            if (metadataStr) {
+              metadataStr.split(";").forEach((pair) => {
+                const [key, value] = pair.split(":").map((s) => s.trim());
+                if (key && value) {
+                  metadata[key] = value;
+                }
+              });
+            }
+
+            if (!annMap[label]) {
               if (unAssignedStyles.length === 0) {
                 unAssignedStyles = [...ANNOTATION_STYLES];
               }
               const style = unAssignedStyles.pop();
-              annMap[annLabel] = {
-                id: annLabel,
-                label: annLabel,
+              annMap[label] = {
+                id: label,
+                label: label,
                 annotationStyle: style!,
-                wells: [wellIndex],
+                wellData: { [wellIndex]: metadata as WellMetaT },
               };
             } else {
-              annMap[annLabel].wells.push(wellIndex);
+              if (!annMap[label].wellData) {
+                annMap[label].wellData = {};
+              }
+              annMap[label].wellData![wellIndex] = metadata as WellMetaT;
             }
           });
         }
