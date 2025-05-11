@@ -173,7 +173,7 @@ export const Plate = <WellMetaT extends Record<string, string>>({
           {Array.from({ length: plateSize }).map((_, i) => {
             const isSelected = selection?.wells.includes(i) ?? false;
             const anns: WellAnnotation<WellMetaT>[] =
-              wellAnnotations?.filter((ann) => ann.wells.includes(i)) ?? [];
+              wellAnnotations?.filter((ann) => ann.wellData?.[i]) ?? [];
             return (
               <Well
                 key={`well-${i}`}

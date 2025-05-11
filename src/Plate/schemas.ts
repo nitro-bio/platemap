@@ -1,11 +1,9 @@
 import { ReactNode } from "react";
-import { z } from "zod";
 
-export const PlateSelectionSchema = z.object({
-  wells: z.array(z.number()),
-  className: z.string().optional(),
-});
-export type PlateSelection = z.infer<typeof PlateSelectionSchema>;
+export interface PlateSelection {
+  wells: number[];
+  className?: string;
+}
 
 export interface AnnotationStyle {
   id: string;

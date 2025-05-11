@@ -20,9 +20,6 @@ importers:
       tailwindcss:
         specifier: ^4.0.14
         version: 4.0.14
-      zod:
-        specifier: ^3.24.2
-        version: 3.24.2
     devDependencies:
       '@tailwindcss/vite':
         specifier: ^4.0.14
@@ -1808,9 +1805,6 @@ packages:
     resolution: {integrity: sha512-KHBC7z61OJeaMGnF3wqNZj+GGNXOyypZviiKpQeiHirG5Ib1ImwcLBH70rbMSkKfSmUNBsdf2PwaEJtKvgmkNw==}
     engines: {node: '>=12.20'}
 
-  zod@3.24.2:
-    resolution: {integrity: sha512-lY7CDW43ECgW9u1TcT3IoXHflywfVqDYze4waEz812jR/bZ8FHDsl7pFQoSZTz5N+2NqRXs8GBwnAwo3ZNxqhQ==}
-
 snapshots:
 
   '@ampproject/remapping@2.3.0':
@@ -3438,5 +3432,3 @@ snapshots:
   yocto-queue@0.1.0: {}
 
   yocto-queue@1.2.0: {}
-
-  zod@3.24.2: {}
