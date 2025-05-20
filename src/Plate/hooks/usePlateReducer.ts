@@ -2,8 +2,6 @@ import { useMemo, useReducer } from "react";
 
 import { PlateSelection, PlateSize, WellAnnotation } from "../schemas";
 
-import { parseCSV } from "../utilsCsv";
-
 export interface PlateState<WellMetaT extends Record<string, string>> {
   plateSize: PlateSize;
   wellAnnotations: WellAnnotation<WellMetaT>[];
@@ -76,7 +74,6 @@ function plateReducer<WellMetaT extends Record<string, string>>(
 
 export const usePlateReducer = <WellMetaT extends Record<string, string>>({
   initialPlateSize,
-  initialCSV,
   initialWellAnnotations,
   initialSelection,
   initialExcludedWells,
@@ -85,17 +82,10 @@ export const usePlateReducer = <WellMetaT extends Record<string, string>>({
   plateActions: PlateActions<WellMetaT>;
 } => {
   const newWellAnnotations = useMemo(() => {
-    if (initialWellAnnotations && initialCSV) {
-      throw Error("Both initialWellAnnotations and initialCSV were provided.");
-    }
-
     if (initialWellAnnotations) {
       return initialWellAnnotations;
     }
 
-    if (initialCSV) {
-      return parseCSV<WellMetaT>(initialCSV, initialPlateSize);
-    }
     return [];
   }, []);
 
