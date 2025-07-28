@@ -12,6 +12,30 @@ const root = ReactDOM.createRoot(rootElement);
 type AnnotationMeta = Record<string, string>;
 
 const App = () => {
+  const [isShiftPressed, setIsShiftPressed] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Shift") {
+        setIsShiftPressed(true);
+      }
+    };
+
+    const handleKeyUp = (e) => {
+      if (e.key === "Shift") {
+        setIsShiftPressed(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
+
   const {
     plateState: {
       plateSize,
@@ -29,6 +53,7 @@ const App = () => {
   } = usePlateReducer<AnnotationMeta>({
     initialPlateSize: 96,
   });
+
   return (
     <div className="text-4xl">
       <h1>My App</h1>
@@ -42,6 +67,7 @@ const App = () => {
         setWellAnnotations={setWellAnnotations}
         activeWellAnnotation={activeWellAnnotation}
         setActiveWellAnnotation={setActiveWellAnnotation}
+        buildUpSelection={isShiftPressed}
       />
     </div>
   );

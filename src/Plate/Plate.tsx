@@ -1,7 +1,8 @@
-import { SelectableGroup, createSelectable } from "react-selectable";
+import { useRef, useState } from "react";
+import Selecto from "react-selecto";
+import { cn } from "../utils";
 import { PlateSelection, PlateSize, WellAnnotation } from "./schemas";
 import { getRowLabel, indexToExcelCell, plateSizeToRowsCols } from "./utils";
-import { cn } from "../utils";
 
 export interface PlateProps<WellMetaT extends Record<string, string>> {
   plateSize: PlateSize;
@@ -36,6 +37,7 @@ export const Plate = <WellMetaT extends Record<string, string>>({
   buildUpSelection,
   selectionTolerance = 20,
 }: PlateProps<WellMetaT>) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const { rows, cols } = plateSizeToRowsCols(plateSize);
   const rowLabels: string[] = Array.from({ length: rows }, (_, i) =>
     getRowLabel(i),
@@ -44,6 +46,9 @@ export const Plate = <WellMetaT extends Record<string, string>>({
   const colLabels: string[] = Array.from({ length: cols }, (_, i) =>
     (i + 1).toString(),
   );
+
+  // Track hovered wells coming from Selecto
+  const [hoveredWells, setHoveredWells] = useState<number[]>([]);
 
   // Add the number of columns for the wells
   let gridClass: string;
@@ -81,6 +86,7 @@ export const Plate = <WellMetaT extends Record<string, string>>({
       });
       return;
     }
+
     const currentSelection = new Set(selection?.wells ?? []);
     if (
       selectedSet.size &&
@@ -112,168 +118,193 @@ export const Plate = <WellMetaT extends Record<string, string>>({
 
   return (
     <>
-      <SelectableGroup
-        onEndSelection={handleSelection}
-        tolerance={selectionTolerance}
-        className={cn("pt-6", className)}
+      <div
+        className={cn(
+          "plate-container",
+          "grid gap-2",
+          "select-none",
+          "text-xs md:text-sm lg:text-base",
+          plateSize > 96 && "px-4",
+          gridClass,
+          className,
+        )}
+        ref={containerRef}
       >
+        <div className={cn("col-span-full col-start-2 grid grid-cols-subgrid")}>
+          {colLabels.map((colLabel) => (
+            <button
+              key={`col-${colLabel}`}
+              className={cn(
+                "flex items-end justify-center",
+                plateSize > 96 && "px-1 text-[0.6rem] break-all",
+                "border-r border-b border-l border-[var(--color-header-border)] pb-1 text-[var(--color-header-text)]",
+                "hover:bg-[var(--color-header-hover-bg)] hover:text-[var(--color-header-hover-text)]",
+              )}
+              onClick={() => {
+                toggleColumnInSelection(colLabels.indexOf(colLabel));
+              }}
+            >
+              {colLabel}
+            </button>
+          ))}
+        </div>
         <div
           className={cn(
-            "grid gap-2",
-            "select-none",
-            "text-xs md:text-sm lg:text-base",
-            plateSize > 96 && "px-4",
-            gridClass,
+            "col-span-1 grid grid-cols-subgrid gap-2",
+
+            "text-[var(--color-well-foreground)]",
           )}
         >
-          <div
-            className={cn("col-span-full col-start-2 grid grid-cols-subgrid")}
-          >
-            {colLabels.map((colLabel) => (
-              <button
-                key={`col-${colLabel}`}
-                className={cn(
-                  "flex items-end justify-center",
-                  plateSize > 96 && "break-all px-1 text-[0.6rem]",
-                  "border-noir-300 text-noir-400 dark:border-noir-500 dark:text-noir-300 border-b border-l border-r pb-1",
-                  "hover:bg-brand-200 hover:text-noir-800 dark:text-noir-600 hover:dark:bg-brand-600 hover:dark:text-noir-200",
-                )}
-                onClick={() => {
-                  toggleColumnInSelection(colLabels.indexOf(colLabel));
-                }}
-              >
-                {colLabel}
-              </button>
-            ))}
-          </div>
-          <div
-            className={cn(
-              "col-span-1 grid grid-cols-subgrid gap-2 ",
-
-              "text-noir-600 dark:text-noir-300",
-            )}
-          >
-            {rowLabels.map((rowLabel) => (
-              <button
-                key={`row-${rowLabel}`}
-                onClick={() => {
-                  toggleRowInSelection(rowLabels.indexOf(rowLabel));
-                }}
-                className={cn(
-                  "ml-auto px-1",
-                  plateSize > 96 && "text-[0.6rem]",
-                  "border-noir-300 text-noir-400 dark:border-noir-500 dark:text-noir-300 border-b border-r border-t pr-1",
-                  "hover:bg-brand-200 hover:text-noir-800 dark:text-noir-600 hover:dark:bg-brand-600 hover:dark:text-noir-200",
-                )}
-              >
-                {rowLabel}
-              </button>
-            ))}
-          </div>
-
-          <div className="col-span-full col-start-2 grid grid-cols-subgrid gap-2 ">
-            {Array.from({ length: plateSize }).map((_, i) => {
-              const isSelected = selection?.wells.includes(i) ?? false;
-              const anns: WellAnnotation<WellMetaT>[] =
-                wellAnnotations?.filter((ann) => ann.wells.includes(i)) ?? [];
-              return (
-                <Well
-                  key={`well-${i}`}
-                  index={i}
-                  plateSize={plateSize}
-                  selectableKey={i}
-                  isSelected={isSelected}
-                  toggleSelection={toggleWellInSelection}
-                  annotations={anns}
-                  isExcluded={excludedWells.includes(i)}
-                />
-              );
-            })}
-          </div>
+          {rowLabels.map((rowLabel) => (
+            <button
+              key={`row-${rowLabel}`}
+              onClick={() => {
+                toggleRowInSelection(rowLabels.indexOf(rowLabel));
+              }}
+              className={cn(
+                "ml-auto px-1",
+                plateSize > 96 && "text-[0.6rem]",
+                "border-t border-r border-b border-[var(--color-header-border)] pr-1 text-[var(--color-header-text)]",
+                "hover:bg-[var(--color-header-hover-bg)] hover:text-[var(--color-header-hover-text)]",
+              )}
+            >
+              {rowLabel}
+            </button>
+          ))}
         </div>
-      </SelectableGroup>
+
+        <div className="well-container col-span-full col-start-2 grid grid-cols-subgrid gap-2">
+          {Array.from({ length: plateSize }).map((_, i) => {
+            const isSelected = selection?.wells.includes(i) ?? false;
+            const isHovered = hoveredWells.includes(i);
+            const anns: WellAnnotation<WellMetaT>[] =
+              wellAnnotations?.filter((ann) => ann.wells.includes(i)) ?? [];
+            return (
+              <Well
+                key={`well-${i}`}
+                index={i}
+                plateSize={plateSize}
+                isSelected={isSelected}
+                isHovered={isHovered}
+                toggleSelection={toggleWellInSelection}
+                annotations={anns}
+                isExcluded={excludedWells.includes(i)}
+              />
+            );
+          })}
+        </div>
+        <Selecto
+          container={containerRef.current}
+          selectableTargets={[".well-selectable", ".well-container"]}
+          selectFromInside={true}
+          hitRate={selectionTolerance / 100}
+          onSelect={(e) => {
+            // Update hovered wells live while dragging
+            const indices = e.selected
+              .map((el) =>
+                parseInt(el.getAttribute("data-well-index") ?? "-1", 10),
+              )
+              .filter((idx) => idx !== -1);
+            setHoveredWells(indices);
+          }}
+          onSelectEnd={(e) => {
+            // Clear hover state once drag ends and commit the selection
+            const indices = e.selected
+              .map((el) =>
+                parseInt(el.getAttribute("data-well-index") ?? "-1", 10),
+              )
+              .filter((idx) => idx !== -1);
+            setHoveredWells([]);
+            handleSelection(indices);
+          }}
+        />
+      </div>
     </>
   );
 };
-const Well = createSelectable(
-  <WellMetaT extends Record<string, string>>({
-    index,
-    plateSize,
-    selectableRef,
-    isSelected,
-    isExcluded,
-    toggleSelection,
-    annotations,
-  }: {
-    index: number;
-    plateSize: PlateSize;
-    selectableRef?: React.RefObject<HTMLButtonElement>;
-    selectableKey: number;
-    isSelected: boolean;
-    isExcluded: boolean;
-    toggleSelection: (well: number) => void;
 
-    annotations: WellAnnotation<WellMetaT>[];
-  }) => {
-    return (
-      <div className="relative isolate h-full ">
-        <div
+interface WellProps<WellMetaT extends Record<string, string>> {
+  index: number;
+  plateSize: PlateSize;
+  isSelected: boolean;
+  isExcluded: boolean;
+  isHovered: boolean;
+  toggleSelection: (well: number) => void;
+  annotations: WellAnnotation<WellMetaT>[];
+}
+
+const Well = <WellMetaT extends Record<string, string>>({
+  index,
+  plateSize,
+  isSelected,
+  isExcluded,
+  isHovered,
+  toggleSelection,
+  annotations,
+}: WellProps<WellMetaT>) => {
+  return (
+    <div className="relative isolate h-full">
+      <div
+        className={cn(
+          "absolute -inset-1",
+          isSelected && "bg-[var(--color-well-selected)]/[0.8]",
+          isExcluded && "bg-[var(--color-well-excluded)]",
+          isHovered &&
+            !isSelected &&
+            !isExcluded &&
+            "bg-[var(--color-well-hovered)]/[0.3]",
+        )}
+      />
+      <button
+        data-well-index={index}
+        className={cn(
+          isExcluded ? "well-excluded" : "well-selectable",
+          "group my-auto flex h-full w-full cursor-pointer items-center justify-center bg-[var(--color-well-background)]",
+          "aspect-square max-h-full min-h-px max-w-full min-w-px rounded-full",
+          "transition-all duration-300 ease-in-out",
+          "border border-[var(--color-plate-foreground)]",
+          isExcluded ? "" : "hover:scale-110",
+          isHovered && !isExcluded && "scale-105", // subtle scale on hover provided by Selecto
+          "relative overflow-hidden",
+        )}
+        onClick={() => {
+          toggleSelection(index);
+        }}
+      >
+        <span
           className={cn(
-            "absolute -inset-1",
-            isSelected && "bg-brand-200/80 dark:bg-brand-600/40 ",
-            isExcluded && "bg-noir-300 dark:bg-noir-700",
-          )}
-        />
-        <button
-          ref={isExcluded ? undefined : selectableRef}
-          onClick={() => {
-            toggleSelection(index);
-          }}
-          className={cn(
-            "bg-noir-100 dark:bg-noir-800 group my-auto flex h-full w-full cursor-pointer items-center justify-center",
-            "aspect-square max-h-full min-h-px min-w-px max-w-full rounded-full",
-            "transition-all duration-300 ease-in-out",
-            "border-noir-800 dark:border-noir-200 border",
-            isExcluded ? "" : "hover:scale-110",
-            "relative overflow-hidden",
+            plateSize === 24 && "text-2xl",
+            plateSize === 48 && "text-xl",
+            plateSize === 96 && "text-sm",
+            plateSize === 384 && "hidden",
+            plateSize === 1536 && "hidden",
+            isSelected
+              ? "text-black dark:text-white"
+              : "text-[var(--color-well-foreground)]",
           )}
         >
+          {indexToExcelCell(index, plateSize)}
+        </span>
+        {annotations.map((ann, index) => (
           <span
+            key={ann.id}
             className={cn(
-              plateSize === 24 && "text-2xl",
-              plateSize === 48 && "text-xl",
-              plateSize === 96 && "text-sm",
-              plateSize === 384 && "hidden",
-              plateSize === 1536 && "hidden",
-              isSelected
-                ? "text-black dark:text-white"
-                : "text-noir-600 dark:text-noir-300",
+              isExcluded ? "" : ann.annotationStyle.wellClassName,
+              isExcluded ? "" : "group-hover:opacity-50",
+              "opacity-40 dark:opacity-40",
+              "transition-all duration-300 ease-in-out",
+              "absolute inset-0",
+              "flex items-center justify-center",
+              index === 0 && "rounded-l-full",
+              index === annotations.length - 1 && "rounded-r-full",
             )}
-          >
-            {indexToExcelCell(index, plateSize)}
-          </span>
-          {annotations.map((ann, index) => (
-            <span
-              key={ann.id}
-              className={cn(
-                isExcluded ? "" : ann.annotationStyle.wellClassName,
-                isExcluded ? "" : "group-hover:opacity-50",
-                "opacity-40 dark:opacity-40",
-                "transition-all duration-300 ease-in-out",
-                "absolute inset-0",
-                "flex items-center justify-center ",
-                index === 0 && "rounded-l-full",
-                index === annotations.length - 1 && "rounded-r-full",
-              )}
-              style={{
-                width: (1 / annotations.length) * 100 + "%",
-                left:
-                  (annotations.indexOf(ann) / annotations.length) * 100 + "%",
-              }}
-            />
-          ))}
-        </button>
-      </div>
-    );
-  },
-);
+            style={{
+              width: (1 / annotations.length) * 100 + "%",
+              left: (annotations.indexOf(ann) / annotations.length) * 100 + "%",
+            }}
+          />
+        ))}
+      </button>
+    </div>
+  );
+};

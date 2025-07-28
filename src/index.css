@@ -1,27 +1,28 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 @theme {
-  --color-noir-50: #fafafa;
-  --color-noir-100: #f4f4f5;
-  --color-noir-200: #e4e4e7;
-  --color-noir-300: #d4d4d8;
-  --color-noir-400: #a1a1aa;
-  --color-noir-500: #71717a;
-  --color-noir-600: #52525b;
-  --color-noir-700: #3f3f46;
-  --color-noir-800: #27272a;
-  --color-noir-900: #18181b;
-  --color-noir-950: #09090b;
+  /* Platemap-specific semantic variables */
+  --color-plate-background: var(--color-zinc-100);
+  --color-plate-foreground: var(--color-zinc-800);
 
-  --color-brand-50: var(--color-emerald-50);
-  --color-brand-100: var(--color-emerald-100);
-  --color-brand-200: var(--color-emerald-200);
-  --color-brand-300: var(--color-emerald-300);
-  --color-brand-400: var(--color-emerald-400);
-  --color-brand-500: var(--color-emerald-500);
-  --color-brand-600: var(--color-emerald-600);
-  --color-brand-700: var(--color-emerald-700);
-  --color-brand-800: var(--color-emerald-800);
-  --color-brand-900: var(--color-emerald-900);
-  --color-brand-950: var(--color-emerald-950);
+  --color-well-background: var(--color-zinc-100);
+  --color-well-foreground: var(--color-zinc-600);
+
+  --color-well-selected: var(--color-fuchsia-200);
+  --color-well-excluded: var(--color-zinc-300);
+
+  --color-header-border: var(--color-zinc-800);
+  --color-header-text: var(--color-zinc-800);
+
+  --color-header-hover-bg: var(--color-fuchsia-200);
+  --color-header-hover-text: var(--color-zinc-800);
+
+  --color-selection-box: var(--color-fuchsia-200);
+  --color-selection-border: var(--color-fuchsia-500);
+}
+
+.selecto-selection {
+  background: var(--color-selection-box) !important;
+  border: 2px solid var(--color-selection-border) !important;
+  opacity: 0.5 !important;
 }
