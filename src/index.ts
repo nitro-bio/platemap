@@ -1,4 +1,5 @@
 export {
+  type PlateAction,
   type PlateActions,
   type PlateState,
   type UsePlateParams,
@@ -8,12 +9,12 @@ export { Plate } from "./Plate/Plate";
 export type {
   AnnotationColor,
   AnnotationMetadata,
+  AnnotationMetadataValue,
   AnnotationStyle,
   PlateSelection,
   PlateSize,
   WellAnnotation,
 } from "./Plate/schemas";
-
 export {
   ANNOTATION_STYLES,
   BLUE_STYLE,
@@ -25,6 +26,11 @@ export {
   RED_STYLE,
   YELLOW_STYLE,
 } from "./Plate/schemas";
+export {
+  plateReducer,
+  resizePlateState,
+  validatePlateState,
+} from "./Plate/state";
 
 export {
   columnsToWells,
@@ -38,6 +44,7 @@ export {
   indexToExcelCell,
   plateSizeToRowsCols,
   randomizeWellAnnotations,
+  rangeToWells,
   rowsToWells,
   wellAnnotationsToCSV,
   wellAnnotationsToList,

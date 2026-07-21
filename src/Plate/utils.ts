@@ -1,4 +1,5 @@
 import type {
+  AnnotationMetadata,
   PlateSize,
   WellAnnotation,
   WellAnnotationCSVRow,
@@ -98,6 +99,44 @@ export const columnsToWells = ({
   );
 };
 
+/** Return the inclusive rectangular range between two zero-based wells. */
+export const rangeToWells = ({
+  plateSize,
+  start,
+  end,
+}: {
+  plateSize: PlateSize;
+  start: number;
+  end: number;
+}): number[] => {
+  if (
+    !Number.isInteger(start) ||
+    !Number.isInteger(end) ||
+    start < 0 ||
+    end < 0 ||
+    start >= plateSize ||
+    end >= plateSize
+  ) {
+    throw new RangeError("Range endpoint is outside the plate");
+  }
+  const { cols } = plateSizeToRowsCols(plateSize);
+  const startRow = Math.floor(start / cols);
+  const endRow = Math.floor(end / cols);
+  const startColumn = start % cols;
+  const endColumn = end % cols;
+  const firstRow = Math.min(startRow, endRow);
+  const lastRow = Math.max(startRow, endRow);
+  const firstColumn = Math.min(startColumn, endColumn);
+  const lastColumn = Math.max(startColumn, endColumn);
+  const wells: number[] = [];
+  for (let row = firstRow; row <= lastRow; row += 1) {
+    for (let column = firstColumn; column <= lastColumn; column += 1) {
+      wells.push(row * cols + column);
+    }
+  }
+  return wells;
+};
+
 export const getEdgeWells = (plateSize: PlateSize): number[] => {
   const { rows, cols } = plateSizeToRowsCols(plateSize);
   return Array.from({ length: plateSize }, (_, index) => index).filter(
@@ -120,9 +159,7 @@ const shuffled = (values: number[], random: () => number): number[] => {
   return result;
 };
 
-export const randomizeWellAnnotations = <
-  WellMetaT extends Record<string, unknown>,
->({
+export const randomizeWellAnnotations = <WellMetaT extends AnnotationMetadata>({
   plateSize,
   excludedWells,
   wellAnnotations,

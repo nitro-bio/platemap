@@ -1,10 +1,15 @@
 import { useRef, useState } from "react";
 import Selecto from "react-selecto";
 import { cn } from "../utils";
-import type { PlateSelection, PlateSize, WellAnnotation } from "./schemas";
+import type {
+  AnnotationMetadata,
+  PlateSelection,
+  PlateSize,
+  WellAnnotation,
+} from "./schemas";
 import { getRowLabel, indexToExcelCell, plateSizeToRowsCols } from "./utils";
 
-export interface PlateProps<WellMetaT extends Record<string, unknown>> {
+export interface PlateProps<WellMetaT extends AnnotationMetadata> {
   plateSize: PlateSize;
   wellAnnotations: WellAnnotation<WellMetaT>[];
   activeWellAnnotation: WellAnnotation<WellMetaT> | null;
@@ -24,7 +29,7 @@ export interface PlateProps<WellMetaT extends Record<string, unknown>> {
   ariaLabel?: string;
 }
 
-export const Plate = <WellMetaT extends Record<string, unknown>>({
+export const Plate = <WellMetaT extends AnnotationMetadata>({
   plateSize,
   excludedWells,
   className,
@@ -196,7 +201,7 @@ export const Plate = <WellMetaT extends Record<string, unknown>>({
   );
 };
 
-interface WellProps<WellMetaT extends Record<string, unknown>> {
+interface WellProps<WellMetaT extends AnnotationMetadata> {
   index: number;
   plateSize: PlateSize;
   isSelected: boolean;
@@ -206,7 +211,7 @@ interface WellProps<WellMetaT extends Record<string, unknown>> {
   annotations: WellAnnotation<WellMetaT>[];
 }
 
-const Well = <WellMetaT extends Record<string, unknown>>({
+const Well = <WellMetaT extends AnnotationMetadata>({
   index,
   plateSize,
   isSelected,

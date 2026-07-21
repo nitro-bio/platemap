@@ -5,12 +5,13 @@ import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 
 export default defineConfig({
+  cacheDir: ".vite-cache",
   plugins: [
     react(),
     tailwindcss(),
     dts({
       insertTypesEntry: true,
-      rollupTypes: true,
+      rollupTypes: false,
       tsconfigPath: "./tsconfig.app.json",
     }),
   ],
@@ -24,6 +25,15 @@ export default defineConfig({
     },
     rollupOptions: {
       external: ["react", "react-dom"],
+      onwarn(warning, defaultHandler) {
+        if (
+          warning.code === "INVALID_ANNOTATION" &&
+          warning.id?.includes("@daybrush/utils")
+        ) {
+          return;
+        }
+        defaultHandler(warning);
+      },
       output: {
         globals: {
           react: "React",

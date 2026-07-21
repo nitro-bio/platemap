@@ -19,12 +19,13 @@
     "lint:fix": "biome check . --write --unsafe && tsc --noEmit",
     "format": "biome format . --check",
     "format:fix": "biome format . --write",
-    "build": "pnpm lint && vite build && pnpm build-css",
-    "build:ci": "vite build && pnpm build-css",
+    "build": "pnpm lint && vite build && pnpm build-css && pnpm test:consumer",
+    "build:ci": "vite build && pnpm build-css && pnpm test:consumer",
     "build-css": "tailwindcss -i ./src/index.css -o ./dist/nitro-platemap.css --minify",
     "test": "vitest run",
+    "test:consumer": "tsc -p tsconfig.consumer.json --noEmit",
     "test:watch": "vitest",
-    "prepublishOnly": "pnpm test && pnpm build"
+    "prepublishOnly": "pnpm test && pnpm build && pnpm pack --dry-run"
   },
   "dependencies": {
     "react-selecto": "^1.26.3"

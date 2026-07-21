@@ -51,13 +51,11 @@ export const ANNOTATION_STYLES = [
   RED_STYLE,
 ] as const;
 
-export type AnnotationMetadata = Record<
-  string,
-  string | number | boolean | null
->;
+export type AnnotationMetadataValue = string | number | boolean | null;
+export type AnnotationMetadata = Record<string, AnnotationMetadataValue>;
 
 export interface WellAnnotation<
-  T extends Record<string, unknown> = AnnotationMetadata,
+  T extends AnnotationMetadata = AnnotationMetadata,
 > {
   id: string;
   wells: number[];
