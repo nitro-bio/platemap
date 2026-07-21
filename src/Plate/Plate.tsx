@@ -1,4 +1,11 @@
-import { type CSSProperties, useMemo, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  type KeyboardEvent,
+  useMemo,
+  useRef,
+  useState,
+  type WheelEvent,
+} from "react";
 import Selecto from "react-selecto";
 
 import { cn } from "../utils";
@@ -27,6 +34,34 @@ export const Plate = <WellMetaT extends Record<string, unknown>>({
     (layer) => layer.id === plateState.activeLayerId,
   );
   if (!activeLayer) throw new Error("Active layer does not exist");
+  const activeIndex = plateState.layers.findIndex(
+    (layer) => layer.id === plateState.activeLayerId,
+  );
+  const lastCarouselScrollAt = useRef(0);
+  const activateRelativeLayer = (offset: number): void => {
+    const count = plateState.layers.length;
+    if (count < 2) return;
+    const nextIndex = (activeIndex + offset + count) % count;
+    plateActions.setActiveLayer(plateState.layers[nextIndex].id);
+  };
+  const handleCarouselKeyDown = (event: KeyboardEvent<HTMLElement>): void => {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    event.preventDefault();
+    activateRelativeLayer(event.key === "ArrowRight" ? 1 : -1);
+  };
+  const handleCarouselWheel = (event: WheelEvent<HTMLElement>): void => {
+    if (
+      Math.abs(event.deltaX) <= Math.abs(event.deltaY) ||
+      Math.abs(event.deltaX) < 16
+    ) {
+      return;
+    }
+    event.preventDefault();
+    const now = Date.now();
+    if (now - lastCarouselScrollAt.current < 250) return;
+    lastCarouselScrollAt.current = now;
+    activateRelativeLayer(event.deltaX > 0 ? 1 : -1);
+  };
   if (plateState.viewMode === "flat") {
     return (
       <PlatePlane
@@ -49,22 +84,24 @@ export const Plate = <WellMetaT extends Record<string, unknown>>({
       />
     );
   }
-  const activeIndex = plateState.layers.findIndex(
-    (layer) => layer.id === plateState.activeLayerId,
-  );
   return (
     <section
       aria-label="Isometric plate stack"
+      aria-roledescription="circular layer carousel"
       className={cn("platemap-isometric-stack", className)}
+      tabIndex={0}
+      onKeyDown={handleCarouselKeyDown}
+      onWheel={handleCarouselWheel}
       style={
         { "--platemap-layer-count": plateState.layers.length } as CSSProperties
       }
     >
       {plateState.layers.map((layer, index) => {
-        const relative = index - activeIndex;
-        const distance = Math.abs(relative);
+        const carouselIndex =
+          (index - activeIndex + plateState.layers.length) %
+          plateState.layers.length;
         const cascadeSpan = Math.max(1, plateState.layers.length - 1);
-        const cascadePosition = index * Math.min(1, 3.5 / cascadeSpan);
+        const cascadePosition = carouselIndex * Math.min(1, 3.5 / cascadeSpan);
         return (
           <button
             key={layer.id}
@@ -76,11 +113,10 @@ export const Plate = <WellMetaT extends Record<string, unknown>>({
             className="platemap-isometric-plane"
             style={
               {
-                "--platemap-layer-index": index,
-                "--platemap-layer-relative": relative,
-                "--platemap-layer-distance": distance,
+                "--platemap-layer-index": carouselIndex,
+                "--platemap-layer-distance": carouselIndex,
                 "--platemap-layer-position": cascadePosition,
-                "--platemap-layer-z": plateState.layers.length - index,
+                "--platemap-layer-z": plateState.layers.length - carouselIndex,
               } as CSSProperties
             }
             onClick={() => plateActions.setActiveLayer(layer.id)}

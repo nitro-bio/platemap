@@ -9,7 +9,7 @@
 
 ## Summary
 
-Replace the flat annotation collection with ordered, independently editable plate-map layers. In flat mode, the plate displays and edits only the active layer. A read-only isometric mode displays every layer as an exploded stack of plate maps and lets the user scrub or click through the stack to change the active layer.
+Replace the flat annotation collection with ordered, independently editable plate-map layers. In flat mode, the plate displays and edits only the active layer. A read-only isometric mode displays every layer as an exploded stack of plate maps and lets the user cycle or click through the stack to change the active layer.
 
 The library remains controlled through a canonical `usePlateReducer` state engine. `Plate` and a new `PlateControls` component receive the reducer's grouped `plateState` and `plateActions` objects. `PlateControls` provides the opinionated, shadcn-style reference UI for the complete layer lifecycle and file import/export, while visual customization is exposed through semantic CSS variables and a root `className`.
 
@@ -180,24 +180,25 @@ Isometric mode is a read-only overview made from the same DOM-based plate-map re
 - Render every layer as a separate tilted plate-map plane in array order.
 - Every plane shows its wells, annotation rendering, global selection, exclusions, and layer name.
 - Do not show row or column coordinate headers on the planes.
-- The complete stack remains present while scrubbing.
-- Planes fan evenly to the right and upward in stored layer order, with stable geometry that does not move or resize when the active layer changes.
-- Changing focus raises and emphasizes the active plane without changing the position or relative order of any plane.
+- The complete stack remains present while cycling.
+- The active plane occupies the front-left position. Remaining planes fan evenly to the right and upward in cyclic stored order, wrapping from the final layer back to the first.
+- Changing focus rotates the circular presentation without mutating stored layer order, raises and emphasizes the new active plane, and keeps every plane available.
 - CSS transitions animate discrete focus changes and must respect `prefers-reduced-motion`.
 - The implementation uses React DOM and CSS transforms only; no canvas or WebGL.
 
 ### Interaction
 
 - Isometric wells are read-only: they cannot modify selection or annotations.
-- A discrete integer range scrubber has one stop per layer.
-- Scrubbing changes `activeLayerId`; no separate focused-layer state is required.
+- Previous and next controls cycle through layers without terminal disabled states, wrapping in both directions.
+- Horizontal trackpad scrolling and left/right arrow keys provide the same circular navigation while the stack is focused.
+- Cycling changes `activeLayerId`; no separate focused-layer state is required.
 - Clicking a layer plane also makes that layer active.
 - Entering or leaving isometric mode preserves the active layer and global selection.
 - Returning to flat mode displays the newly active layer and permits normal editing.
 
 ## `PlateControls`
 
-Export a single opinionated, customizable `PlateControls` component. Do not export its internal rows, buttons, or scrubber as public primitives in v1.
+Export a single opinionated, customizable `PlateControls` component. Do not export its internal rows, buttons, or circular navigation as public primitives in v1.
 
 ### Props and customization
 
@@ -223,9 +224,9 @@ Export a single opinionated, customizable `PlateControls` component. Do not expo
 ### View UI
 
 - Provide a `flat`/`isometric` view toggle.
-- Show the discrete layer scrubber in isometric mode.
-- Keep the layer list and scrubber synchronized through `activeLayerId`.
-- Expose accessible names and current values for the toggle and scrubber.
+- Show circular previous/next navigation and an explicit `Layer N of M` status in isometric mode.
+- Keep the layer list and circular navigation synchronized through `activeLayerId`.
+- Expose accessible names and current values for the toggle, status, and navigation controls.
 
 ### File UI
 
@@ -322,7 +323,7 @@ Add `zod` as a runtime dependency and publicly export:
 - Reorder buttons require explicit layer-specific accessible names and correct disabled states.
 - Inline rename and delete confirmation must be keyboard operable and restore focus sensibly on completion or cancellation.
 - The view toggle exposes its current mode.
-- The isometric scrubber uses a labeled native range input or equivalent accessible slider and announces the active layer name.
+- The isometric navigator announces the active layer name and its position, wraps in both directions, and supports buttons, horizontal scrolling, and left/right arrow keys.
 - Isometric layer planes are keyboard activatable even though their wells are not interactive.
 - Isometric transforms must not determine DOM reading order; reading order follows the top-to-bottom layer array.
 - Color is never the only indicator of active state, selection, errors, or destructive confirmation.
@@ -386,7 +387,7 @@ Add `zod` as a runtime dependency and publicly export:
 ## Documentation and Demo
 
 - Update the demo app to exercise the canonical `usePlateReducer` integration.
-- Demonstrate layer creation, activation, inline rename, reordering, deletion, flat/isometric switching, scrub focus, annotation overflow, CSV import/export, JSON round trip, and a surfaced import error.
+- Demonstrate layer creation, activation, inline rename, reordering, deletion, flat/isometric switching, circular navigation, annotation overflow, CSV import/export, JSON round trip, and a surfaced import error.
 - Update the README with the v3 grouped-prop example, public data model, ordering convention, file formats, CSS variables, and links to the demo.
 - Document that v3 is intentionally breaking and that a runtime legacy migrator exists; a detailed migration guide is not required.
 

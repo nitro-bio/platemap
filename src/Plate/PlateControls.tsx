@@ -48,6 +48,12 @@ export const PlateControls = <WellMetaT extends Record<string, unknown>>({
     (layer) => layer.id === plateState.activeLayerId,
   );
   const activeLayer = plateState.layers[activeIndex];
+  const activateRelativeLayer = (offset: number): void => {
+    const count = plateState.layers.length;
+    if (count < 2) return;
+    const nextIndex = (activeIndex + offset + count) % count;
+    plateActions.setActiveLayer(plateState.layers[nextIndex].id);
+  };
   useEffect(() => {
     if (!focusLayerId) return;
     const button = rootRef.current?.querySelector<HTMLButtonElement>(
@@ -239,23 +245,41 @@ export const PlateControls = <WellMetaT extends Record<string, unknown>>({
           Isometric view
         </button>
         {plateState.viewMode === "isometric" && (
-          <label>
-            Active layer
-            <input
-              type="range"
-              aria-label="Active layer"
-              min={0}
-              max={plateState.layers.length - 1}
-              step={1}
-              value={activeIndex}
-              aria-valuetext={activeLayer.name}
-              onChange={(event) =>
-                plateActions.setActiveLayer(
-                  plateState.layers[Number(event.target.value)].id,
-                )
-              }
-            />
-          </label>
+          <>
+            <div
+              className="platemap-layer-navigation"
+              role="group"
+              aria-label="Active layer navigation"
+            >
+              <button
+                type="button"
+                aria-label="Previous layer"
+                disabled={plateState.layers.length < 2}
+                onClick={() => activateRelativeLayer(-1)}
+              >
+                Previous
+              </button>
+              <output
+                className="platemap-layer-position"
+                role="status"
+                aria-label="Active layer"
+              >
+                {activeLayer.name} · {activeIndex + 1} of{" "}
+                {plateState.layers.length}
+              </output>
+              <button
+                type="button"
+                aria-label="Next layer"
+                disabled={plateState.layers.length < 2}
+                onClick={() => activateRelativeLayer(1)}
+              >
+                Next
+              </button>
+            </div>
+            <span className="platemap-navigation-hint">
+              Swipe the stack or use left and right arrow keys
+            </span>
+          </>
         )}
       </div>
 

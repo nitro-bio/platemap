@@ -93,10 +93,26 @@ describe("Plate accessibility and layers", () => {
     expect(wellGrid?.style.gridColumn).toBe("1 / -1");
     fireEvent.click(screen.getByRole("button", { name: "View layer Layer 2" }));
     expect(
-      screen
-        .getByRole("slider", { name: "Active layer" })
-        .getAttribute("aria-valuetext"),
-    ).toBe("Layer 2");
+      screen.getByRole("status", { name: "Active layer" }).textContent,
+    ).toBe("Layer 2 · 2 of 2");
+    fireEvent.click(screen.getByRole("button", { name: "Next layer" }));
+    expect(
+      screen.getByRole("status", { name: "Active layer" }).textContent,
+    ).toBe("Layer 1 · 1 of 2");
+    fireEvent.keyDown(
+      screen.getByRole("region", { name: "Isometric plate stack" }),
+      { key: "ArrowLeft" },
+    );
+    expect(
+      screen.getByRole("status", { name: "Active layer" }).textContent,
+    ).toBe("Layer 2 · 2 of 2");
+    fireEvent.wheel(
+      screen.getByRole("region", { name: "Isometric plate stack" }),
+      { deltaX: 80, deltaY: 0 },
+    );
+    expect(
+      screen.getByRole("status", { name: "Active layer" }).textContent,
+    ).toBe("Layer 1 · 1 of 2");
   });
 
   test("shows a four-part overflow representation while naming all annotations", () => {

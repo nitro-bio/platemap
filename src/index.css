@@ -178,6 +178,11 @@
   padding: 1rem;
 }
 
+.platemap-isometric-plane[aria-current="true"] .plate-container {
+  outline: 3px solid var(--platemap-control-focus);
+  outline-offset: 3px;
+}
+
 .platemap-plane-label {
   background: var(--platemap-control-background);
   border: 1px solid var(--platemap-control-border);
@@ -265,6 +270,37 @@
 .platemap-controls [role="alert"] {
   color: var(--platemap-control-destructive);
   flex-basis: 100%;
+}
+
+.platemap-layer-navigation {
+  align-items: center;
+  display: grid;
+  flex-basis: 100%;
+  gap: 0.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.platemap-layer-position {
+  font-weight: 700;
+  grid-column: 1 / -1;
+  grid-row: 1;
+  text-align: center;
+}
+
+.platemap-layer-navigation > button:first-child {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.platemap-layer-navigation > button:last-child {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.platemap-navigation-hint {
+  flex-basis: 100%;
+  font-size: 0.75rem;
+  opacity: 0.7;
 }
 
 @media (max-width: 900px) {
