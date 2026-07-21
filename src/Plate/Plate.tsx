@@ -17,6 +17,7 @@ export interface PlateProps<WellMetaT extends Record<string, unknown>> {
   plateState: PlateState<WellMetaT>;
   plateActions: PlateActions<WellMetaT>;
   className?: string;
+  selectionDragContainer?: Element | null;
   selectionTolerance?: number;
   buildUpSelection?: boolean;
   ariaLabel?: string;
@@ -26,6 +27,7 @@ export const Plate = <WellMetaT extends Record<string, unknown>>({
   plateState,
   plateActions,
   className,
+  selectionDragContainer,
   selectionTolerance = 20,
   buildUpSelection,
   ariaLabel = `${plateState.plateSize}-well plate`,
@@ -78,6 +80,7 @@ export const Plate = <WellMetaT extends Record<string, unknown>>({
         interactive
         buildUpSelection={buildUpSelection}
         selectionTolerance={selectionTolerance}
+        selectionDragContainer={selectionDragContainer}
         ariaLabel={ariaLabel}
         className={className}
         showHeaders
@@ -148,6 +151,7 @@ interface PlatePlaneProps<WellMetaT extends Record<string, unknown>> {
   ariaLabel: string;
   className?: string;
   selectionTolerance?: number;
+  selectionDragContainer?: Element | null;
   buildUpSelection?: boolean;
   onSelection?: (wells: number[]) => void;
 }
@@ -162,6 +166,7 @@ const PlatePlane = <WellMetaT extends Record<string, unknown>>({
   ariaLabel,
   className,
   selectionTolerance = 20,
+  selectionDragContainer,
   buildUpSelection,
   onSelection,
 }: PlatePlaneProps<WellMetaT>) => {
@@ -301,6 +306,7 @@ const PlatePlane = <WellMetaT extends Record<string, unknown>>({
       {interactive && (
         <Selecto
           container={containerRef.current}
+          dragContainer={selectionDragContainer ?? containerRef.current}
           selectableTargets={[".well-selectable"]}
           selectFromInside
           hitRate={Math.min(1, Math.max(0, selectionTolerance / 100))}

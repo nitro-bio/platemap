@@ -9,6 +9,7 @@ export interface PlateControlsProps<WellMetaT extends Record<string, unknown>> {
   plateState: PlateState<WellMetaT>;
   plateActions: PlateActions<WellMetaT>;
   className?: string;
+  showViewControls?: boolean;
 }
 
 function downloadText(contents: string, filename: string, type: string): void {
@@ -33,6 +34,7 @@ export const PlateControls = <WellMetaT extends Record<string, unknown>>({
   plateState,
   plateActions,
   className,
+  showViewControls = true,
 }: PlateControlsProps<WellMetaT>) => {
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
@@ -228,60 +230,62 @@ export const PlateControls = <WellMetaT extends Record<string, unknown>>({
         </button>
       </div>
 
-      <div className="platemap-controls-section">
-        <h2>View</h2>
-        <button
-          type="button"
-          aria-pressed={plateState.viewMode === "flat"}
-          onClick={() => plateActions.setViewMode("flat")}
-        >
-          Flat view
-        </button>
-        <button
-          type="button"
-          aria-pressed={plateState.viewMode === "isometric"}
-          onClick={() => plateActions.setViewMode("isometric")}
-        >
-          Isometric view
-        </button>
-        {plateState.viewMode === "isometric" && (
-          <>
-            <div
-              className="platemap-layer-navigation"
-              role="group"
-              aria-label="Active layer navigation"
-            >
-              <button
-                type="button"
-                aria-label="Previous layer"
-                disabled={plateState.layers.length < 2}
-                onClick={() => activateRelativeLayer(-1)}
+      {showViewControls && (
+        <div className="platemap-controls-section">
+          <h2>View</h2>
+          <button
+            type="button"
+            aria-pressed={plateState.viewMode === "flat"}
+            onClick={() => plateActions.setViewMode("flat")}
+          >
+            Flat view
+          </button>
+          <button
+            type="button"
+            aria-pressed={plateState.viewMode === "isometric"}
+            onClick={() => plateActions.setViewMode("isometric")}
+          >
+            Isometric view
+          </button>
+          {plateState.viewMode === "isometric" && (
+            <>
+              <div
+                className="platemap-layer-navigation"
+                role="group"
+                aria-label="Active layer navigation"
               >
-                Previous
-              </button>
-              <output
-                className="platemap-layer-position"
-                role="status"
-                aria-label="Active layer"
-              >
-                {activeLayer.name} · {activeIndex + 1} of{" "}
-                {plateState.layers.length}
-              </output>
-              <button
-                type="button"
-                aria-label="Next layer"
-                disabled={plateState.layers.length < 2}
-                onClick={() => activateRelativeLayer(1)}
-              >
-                Next
-              </button>
-            </div>
-            <span className="platemap-navigation-hint">
-              Swipe the stack or use left and right arrow keys
-            </span>
-          </>
-        )}
-      </div>
+                <button
+                  type="button"
+                  aria-label="Previous layer"
+                  disabled={plateState.layers.length < 2}
+                  onClick={() => activateRelativeLayer(-1)}
+                >
+                  Previous
+                </button>
+                <output
+                  className="platemap-layer-position"
+                  role="status"
+                  aria-label="Active layer"
+                >
+                  {activeLayer.name} · {activeIndex + 1} of{" "}
+                  {plateState.layers.length}
+                </output>
+                <button
+                  type="button"
+                  aria-label="Next layer"
+                  disabled={plateState.layers.length < 2}
+                  onClick={() => activateRelativeLayer(1)}
+                >
+                  Next
+                </button>
+              </div>
+              <span className="platemap-navigation-hint">
+                Swipe the stack or use left and right arrow keys
+              </span>
+            </>
+          )}
+        </div>
+      )}
 
       <div className="platemap-controls-section">
         <h2>Files</h2>
