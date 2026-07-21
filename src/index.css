@@ -37,8 +37,7 @@
   --platemap-control-destructive: var(--color-control-destructive);
   --platemap-control-focus: var(--color-control-focus);
   --platemap-stack-depth: 3rem;
-  --platemap-stack-offset-x: clamp(4rem, 6vw, 6rem);
-  --platemap-stack-offset-y: clamp(2.5rem, 4vw, 4rem);
+  --platemap-stack-offset-y: clamp(2.75rem, 4vw, 3.5rem);
   --platemap-overflow-background: #fff;
   --platemap-overflow-text: #18181b;
 }
@@ -131,13 +130,13 @@
   cursor: pointer;
   display: block;
   filter: saturate(calc(1 - var(--platemap-layer-distance) * 0.04));
-  left: 8%;
+  left: 18%;
   opacity: calc(1 - var(--platemap-layer-distance) * 0.06);
   padding: 0;
   position: absolute;
   top: 34%;
   transform: translate3d(
-      calc(var(--platemap-layer-position) * var(--platemap-stack-offset-x)),
+      0,
       calc(
         var(--platemap-layer-position) *
         -1 *
@@ -161,7 +160,7 @@
   filter: none;
   opacity: 1;
   transform: translate3d(
-      calc(var(--platemap-layer-position) * var(--platemap-stack-offset-x)),
+      0,
       calc(
         var(--platemap-layer-position) *
         -1 *
