@@ -62,6 +62,9 @@ export const Plate = <WellMetaT extends Record<string, unknown>>({
     >
       {plateState.layers.map((layer, index) => {
         const relative = index - activeIndex;
+        const distance = Math.abs(relative);
+        const cascadeSpan = Math.max(1, plateState.layers.length - 1);
+        const cascadePosition = index * Math.min(1, 3.5 / cascadeSpan);
         return (
           <button
             key={layer.id}
@@ -75,6 +78,9 @@ export const Plate = <WellMetaT extends Record<string, unknown>>({
               {
                 "--platemap-layer-index": index,
                 "--platemap-layer-relative": relative,
+                "--platemap-layer-distance": distance,
+                "--platemap-layer-position": cascadePosition,
+                "--platemap-layer-z": plateState.layers.length - index,
               } as CSSProperties
             }
             onClick={() => plateActions.setActiveLayer(layer.id)}
@@ -171,7 +177,7 @@ const PlatePlane = <WellMetaT extends Record<string, unknown>>({
       style={{
         gridTemplateColumns: showHeaders
           ? `max-content repeat(${cols}, minmax(0, 1fr))`
-          : `repeat(${cols}, minmax(0, 1fr))`,
+          : "minmax(0, 1fr)",
       }}
       aria-label={ariaLabel}
     >
@@ -236,7 +242,10 @@ const PlatePlane = <WellMetaT extends Record<string, unknown>>({
         style={
           showHeaders
             ? { gridColumnEnd: `span ${cols}` }
-            : { gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }
+            : {
+                gridColumn: "1 / -1",
+                gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+              }
         }
       >
         {Array.from({ length: plateSize }, (_, index) => (

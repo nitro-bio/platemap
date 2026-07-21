@@ -82,13 +82,15 @@ describe("Plate accessibility and layers", () => {
   });
 
   test("renders read-only isometric planes and synchronizes focus", () => {
-    render(<Harness isometric />);
+    const { container } = render(<Harness isometric />);
     expect(
       screen.getByRole("region", { name: "Isometric plate stack" }),
     ).toBeTruthy();
     expect(
       screen.queryByRole("button", { name: "A1, annotations: Control" }),
     ).toBeNull();
+    const wellGrid = container.querySelector<HTMLElement>(".well-container");
+    expect(wellGrid?.style.gridColumn).toBe("1 / -1");
     fireEvent.click(screen.getByRole("button", { name: "View layer Layer 2" }));
     expect(
       screen

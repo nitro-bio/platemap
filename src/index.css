@@ -36,8 +36,9 @@
   --platemap-control-active: var(--color-control-active);
   --platemap-control-destructive: var(--color-control-destructive);
   --platemap-control-focus: var(--color-control-focus);
-  --platemap-stack-depth: 2.5rem;
-  --platemap-stack-offset: 1.25rem;
+  --platemap-stack-depth: 3rem;
+  --platemap-stack-offset-x: clamp(4rem, 6vw, 6rem);
+  --platemap-stack-offset-y: clamp(2.5rem, 4vw, 4rem);
   --platemap-overflow-background: #fff;
   --platemap-overflow-text: #18181b;
 }
@@ -114,11 +115,14 @@
 }
 
 .platemap-isometric-stack {
-  min-height: min(76vw, 52rem);
-  overflow: auto;
-  padding: calc(var(--platemap-stack-depth) * 2) 4%;
-  perspective: 100rem;
+  isolation: isolate;
+  min-height: clamp(38rem, 62vw, 56rem);
+  overflow: hidden;
+  padding: 4rem 4%;
+  perspective: 110rem;
+  perspective-origin: 50% 45%;
   position: relative;
+  transform-style: preserve-3d;
 }
 
 .platemap-isometric-plane {
@@ -126,24 +130,47 @@
   border: 0;
   cursor: pointer;
   display: block;
+  filter: saturate(calc(1 - var(--platemap-layer-distance) * 0.04));
   left: 8%;
+  opacity: calc(1 - var(--platemap-layer-distance) * 0.06);
   padding: 0;
   position: absolute;
-  top: calc(14% + var(--platemap-layer-index) * var(--platemap-stack-offset));
-  transform: translateY(
-      calc(var(--platemap-layer-relative) * var(--platemap-stack-depth))
+  top: 34%;
+  transform: translate3d(
+      calc(var(--platemap-layer-position) * var(--platemap-stack-offset-x)),
+      calc(
+        var(--platemap-layer-position) *
+        -1 *
+        var(--platemap-stack-offset-y)
+      ),
+      calc(var(--platemap-layer-index) * -1 * var(--platemap-stack-depth))
     )
-    rotateX(55deg) rotateZ(-18deg) scale(0.78);
+    rotateX(5deg) rotateY(-8deg) rotateZ(-1.5deg)
+    scale(calc(0.97 - var(--platemap-layer-distance) * 0.025));
   transform-origin: center;
+  transform-style: preserve-3d;
   transition:
     transform 240ms ease,
-    opacity 240ms ease;
-  width: 84%;
-  z-index: calc(var(--platemap-layer-count) - var(--platemap-layer-index));
+    opacity 240ms ease,
+    filter 240ms ease;
+  width: 64%;
+  z-index: var(--platemap-layer-z);
 }
 
 .platemap-isometric-plane[aria-current="true"] {
-  transform: translateY(0) rotateX(48deg) rotateZ(-18deg) scale(0.86);
+  filter: none;
+  opacity: 1;
+  transform: translate3d(
+      calc(var(--platemap-layer-position) * var(--platemap-stack-offset-x)),
+      calc(
+        var(--platemap-layer-position) *
+        -1 *
+        var(--platemap-stack-offset-y)
+      ),
+      1rem
+    )
+    rotateX(3deg) rotateY(-6deg) rotateZ(-0.5deg) scale(1);
+  z-index: calc(var(--platemap-layer-count) + 1);
 }
 
 .platemap-isometric-plane:focus-visible {
@@ -155,6 +182,10 @@
   background: var(--color-plate-background);
   border: 1px solid var(--color-plate-foreground);
   border-radius: 0.75rem;
+  box-shadow:
+    0 1.5rem 3.5rem rgb(0 0 0 / 16%),
+    0 0.35rem 1rem rgb(0 0 0 / 12%);
+  min-width: 0;
   padding: 1rem;
 }
 
@@ -167,6 +198,8 @@
   font-weight: 700;
   margin-bottom: 0.5rem;
   padding: 0.25rem 0.5rem;
+  position: relative;
+  z-index: 1;
 }
 
 .platemap-controls {
