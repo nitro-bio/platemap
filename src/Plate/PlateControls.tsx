@@ -150,6 +150,16 @@ export const PlateControls = <WellMetaT extends Record<string, unknown>>({
                   </button>
                   <button
                     type="button"
+                    aria-label={`Select ${layer.name}`}
+                    onClick={() => {
+                      plateActions.setActiveLayer(layer.id);
+                      plateActions.setViewMode("flat");
+                    }}
+                  >
+                    Select
+                  </button>
+                  <button
+                    type="button"
                     aria-label={`Rename ${layer.name}`}
                     onClick={() => {
                       setRenamingId(layer.id);
