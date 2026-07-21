@@ -1,9 +1,8 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, test } from "vitest";
-
+import { usePlateReducer } from "./hooks/usePlateReducer";
 import { Plate } from "./Plate";
 import { PlateControls } from "./PlateControls";
-import { usePlateReducer } from "./hooks/usePlateReducer";
 import { BLUE_STYLE, ORANGE_STYLE, type PlateLayer } from "./schemas";
 
 afterEach(cleanup);
@@ -70,40 +69,65 @@ describe("Plate accessibility and layers", () => {
   test("disables excluded wells and labels row and column controls", () => {
     render(<Harness />);
     expect(
-      (screen.getByRole("button", { name: "A2, excluded" }) as HTMLButtonElement).disabled,
+      (
+        screen.getByRole("button", {
+          name: "A2, excluded",
+        }) as HTMLButtonElement
+      ).disabled,
     ).toBe(true);
     expect(screen.getByRole("button", { name: "Select row A" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Select column 1" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Select column 1" }),
+    ).toBeTruthy();
   });
 
   test("renders read-only isometric planes and synchronizes focus", () => {
     render(<Harness isometric />);
-    expect(screen.getByRole("region", { name: "Isometric plate stack" })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "A1, annotations: Control" })).toBeNull();
+    expect(
+      screen.getByRole("region", { name: "Isometric plate stack" }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: "A1, annotations: Control" }),
+    ).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "View layer Layer 2" }));
     expect(
-      screen.getByRole("slider", { name: "Active layer" }).getAttribute("aria-valuetext"),
+      screen
+        .getByRole("slider", { name: "Active layer" })
+        .getAttribute("aria-valuetext"),
     ).toBe("Layer 2");
   });
 
   test("shows a four-part overflow representation while naming all annotations", () => {
-    const overflowLayers: PlateLayer[] = [{
-      id: LAYER_ONE,
-      name: "Overflow",
-      annotations: Array.from({ length: 6 }, (_, index) => ({
-        id: `00000000-0000-4000-8000-${String(index + 10).padStart(12, "0")}`,
-        label: `Annotation ${index + 1}`,
-        wells: [0],
-        annotationStyle: BLUE_STYLE,
-      })),
-    }];
+    const overflowLayers: PlateLayer[] = [
+      {
+        id: LAYER_ONE,
+        name: "Overflow",
+        annotations: Array.from({ length: 6 }, (_, index) => ({
+          id: `00000000-0000-4000-8000-${String(index + 10).padStart(12, "0")}`,
+          label: `Annotation ${index + 1}`,
+          wells: [0],
+          annotationStyle: BLUE_STYLE,
+        })),
+      },
+    ];
     function OverflowHarness() {
-      const reducer = usePlateReducer({ initialPlateSize: 24, initialLayers: overflowLayers });
+      const reducer = usePlateReducer({
+        initialPlateSize: 24,
+        initialLayers: overflowLayers,
+      });
       return <Plate {...reducer} />;
     }
     const { container } = render(<OverflowHarness />);
-    expect(container.querySelectorAll('[data-well-index="0"] span[class*="platemap-annotation-"]')).toHaveLength(4);
-    expect(screen.getByRole("button", { name: /Annotation 6.*3 additional annotations/ })).toBeTruthy();
+    expect(
+      container.querySelectorAll(
+        '[data-well-index="0"] span[class*="platemap-annotation-"]',
+      ),
+    ).toHaveLength(4);
+    expect(
+      screen.getByRole("button", {
+        name: /Annotation 6.*3 additional annotations/,
+      }),
+    ).toBeTruthy();
   });
 
   test("renders and changes focus across eight 1,536-well planes", () => {
@@ -121,12 +145,14 @@ describe("Plate accessibility and layers", () => {
       return <Plate {...reducer} />;
     }
     const { container } = render(<DenseHarness />);
-    expect(container.querySelectorAll('[data-well-index="1535"]')).toHaveLength(8);
+    expect(container.querySelectorAll('[data-well-index="1535"]')).toHaveLength(
+      8,
+    );
     fireEvent.click(screen.getByRole("button", { name: "View layer Dense 8" }));
     expect(
-      screen.getByRole("button", { name: "View layer Dense 8" }).getAttribute(
-        "aria-current",
-      ),
+      screen
+        .getByRole("button", { name: "View layer Dense 8" })
+        .getAttribute("aria-current"),
     ).toBe("true");
   }, 20_000);
 });

@@ -61,9 +61,11 @@ const annotationStyleSchema = z
 
 const annotationSchema = z.object({
   id: z.string().uuid(),
-  wells: z.array(z.number().int()).refine((items) => new Set(items).size === items.length, {
-    message: "Annotation wells must be unique",
-  }),
+  wells: z
+    .array(z.number().int())
+    .refine((items) => new Set(items).size === items.length, {
+      message: "Annotation wells must be unique",
+    }),
   label: z.string().trim().min(1),
   annotationStyle: annotationStyleSchema,
   className: z.string().optional(),
@@ -79,11 +81,15 @@ const layerSchema = z.object({
 const documentBaseSchema = z.object({
   schemaVersion: z.literal(1),
   plateSize: plateSizeSchema,
-  excludedWells: z.array(z.number().int()).refine(
-    (items) => new Set(items).size === items.length,
-    "Excluded wells must be unique",
-  ),
-  layers: z.array(layerSchema).min(1, "A plate must contain at least one layer"),
+  excludedWells: z
+    .array(z.number().int())
+    .refine(
+      (items) => new Set(items).size === items.length,
+      "Excluded wells must be unique",
+    ),
+  layers: z
+    .array(layerSchema)
+    .min(1, "A plate must contain at least one layer"),
 });
 
 function validateDurableState(
@@ -93,7 +99,11 @@ function validateDurableState(
   const ids = new Set<string>();
   const checkId = (id: string, path: (string | number)[]) => {
     if (ids.has(id)) {
-      context.addIssue({ code: "custom", path, message: `Duplicate UUID ${id}` });
+      context.addIssue({
+        code: "custom",
+        path,
+        message: `Duplicate UUID ${id}`,
+      });
     }
     ids.add(id);
   };
@@ -109,12 +119,24 @@ function validateDurableState(
   value.layers.forEach((layer, layerIndex) => {
     checkId(layer.id, ["layers", layerIndex, "id"]);
     layer.annotations.forEach((annotation, annotationIndex) => {
-      checkId(annotation.id, ["layers", layerIndex, "annotations", annotationIndex, "id"]);
+      checkId(annotation.id, [
+        "layers",
+        layerIndex,
+        "annotations",
+        annotationIndex,
+        "id",
+      ]);
       for (const well of annotation.wells) {
         if (well < 0 || well >= value.plateSize) {
           context.addIssue({
             code: "custom",
-            path: ["layers", layerIndex, "annotations", annotationIndex, "wells"],
+            path: [
+              "layers",
+              layerIndex,
+              "annotations",
+              annotationIndex,
+              "wells",
+            ],
             message: `Annotation well ${well} is outside the plate`,
           });
         }
@@ -123,14 +145,15 @@ function validateDurableState(
   });
 }
 
-export const plateDocumentSchema = documentBaseSchema.superRefine(
-  validateDurableState,
-);
+export const plateDocumentSchema =
+  documentBaseSchema.superRefine(validateDurableState);
 
 const selectionSchema = z.object({
-  wells: z.array(z.number().int()).refine((items) => new Set(items).size === items.length, {
-    message: "Selected wells must be unique",
-  }),
+  wells: z
+    .array(z.number().int())
+    .refine((items) => new Set(items).size === items.length, {
+      message: "Selected wells must be unique",
+    }),
   className: z.string().optional(),
 });
 
@@ -144,7 +167,9 @@ const runtimeStateSchema = documentBaseSchema
   })
   .superRefine((value, context) => {
     validateDurableState({ ...value, schemaVersion: 1 }, context);
-    const activeLayer = value.layers.find((layer) => layer.id === value.activeLayerId);
+    const activeLayer = value.layers.find(
+      (layer) => layer.id === value.activeLayerId,
+    );
     if (!activeLayer) {
       context.addIssue({
         code: "custom",
@@ -186,7 +211,11 @@ const legacyStateSchema = z
   })
   .superRefine((value, context) => {
     if (new Set(value.excludedWells).size !== value.excludedWells.length) {
-      context.addIssue({ code: "custom", path: ["excludedWells"], message: "Excluded wells must be unique" });
+      context.addIssue({
+        code: "custom",
+        path: ["excludedWells"],
+        message: "Excluded wells must be unique",
+      });
     }
     const allWells = [
       ...value.excludedWells,
@@ -194,7 +223,10 @@ const legacyStateSchema = z
       ...value.wellAnnotations.flatMap((annotation) => annotation.wells),
     ];
     if (allWells.some((well) => well < 0 || well >= value.plateSize)) {
-      context.addIssue({ code: "custom", message: "Legacy state contains a well outside the plate" });
+      context.addIssue({
+        code: "custom",
+        message: "Legacy state contains a well outside the plate",
+      });
     }
   });
 
@@ -238,7 +270,10 @@ export function plateDocumentToJSON<
   document: PlateDocumentV1<WellMetaT> | PlateState<WellMetaT>,
   space = 2,
 ): string {
-  const durable = "schemaVersion" in document ? parsePlateDocument(document) : plateStateToDocument(document);
+  const durable =
+    "schemaVersion" in document
+      ? parsePlateDocument(document)
+      : plateStateToDocument(document);
   return JSON.stringify(durable, null, space);
 }
 
@@ -287,11 +322,7 @@ export function parsePlateState<
   input: unknown,
   options: { generateId?: GenerateId } = {},
 ): PlateState<WellMetaT> {
-  if (
-    input !== null &&
-    typeof input === "object" &&
-    "schemaVersion" in input
-  ) {
+  if (input !== null && typeof input === "object" && "schemaVersion" in input) {
     return documentToPlateState(
       parsePlateDocument(input) as PlateDocumentV1<WellMetaT>,
     );
@@ -300,5 +331,8 @@ export function parsePlateState<
 }
 
 export function annotationStyleForColor(color: string): AnnotationStyle | null {
-  return ANNOTATION_STYLES.find((style) => style.color === color.toLowerCase()) ?? null;
+  return (
+    ANNOTATION_STYLES.find((style) => style.color === color.toLowerCase()) ??
+    null
+  );
 }

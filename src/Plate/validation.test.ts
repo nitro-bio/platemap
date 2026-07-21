@@ -10,7 +10,8 @@ import {
 
 const ids = Array.from(
   { length: 12 },
-  (_, index) => `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
+  (_, index) =>
+    `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
 );
 
 describe("plate documents", () => {
@@ -19,7 +20,14 @@ describe("plate documents", () => {
     const state = migrateLegacyPlateState(
       {
         plateSize: 24,
-        wellAnnotations: [{ id: "legacy", label: "Control", wells: [0], annotationStyle: BLUE_STYLE }],
+        wellAnnotations: [
+          {
+            id: "legacy",
+            label: "Control",
+            wells: [0],
+            annotationStyle: BLUE_STYLE,
+          },
+        ],
         selection: { wells: [1] },
         excludedWells: [],
       },
@@ -31,12 +39,27 @@ describe("plate documents", () => {
   });
 
   test("rejects duplicates and out-of-range wells", () => {
-    expect(() => parsePlateDocument({
-      schemaVersion: 1,
-      plateSize: 24,
-      excludedWells: [24],
-      layers: [{ id: ids[0], name: "Layer", annotations: [{ id: ids[0], label: "A", wells: [0], annotationStyle: BLUE_STYLE }] }],
-    })).toThrow();
+    expect(() =>
+      parsePlateDocument({
+        schemaVersion: 1,
+        plateSize: 24,
+        excludedWells: [24],
+        layers: [
+          {
+            id: ids[0],
+            name: "Layer",
+            annotations: [
+              {
+                id: ids[0],
+                label: "A",
+                wells: [0],
+                annotationStyle: BLUE_STYLE,
+              },
+            ],
+          },
+        ],
+      }),
+    ).toThrow();
   });
 });
 
@@ -54,13 +77,17 @@ describe("tidy CSV", () => {
   });
 
   test("surfaces key conflicts and invalid colors", () => {
-    expect(() => parseLayerCSV(
-      "Well,Annotation,Annotation Key\nA1,A,key\nA2,B,key",
-      { plateSize: 24, generateId: () => ids[0] },
-    )).toThrow("conflicts");
-    expect(() => parseLayerCSV(
-      "Well,Annotation,Color\nA1,A,chartreuse",
-      { plateSize: 24, generateId: () => ids[0] },
-    )).toThrow("invalid");
+    expect(() =>
+      parseLayerCSV("Well,Annotation,Annotation Key\nA1,A,key\nA2,B,key", {
+        plateSize: 24,
+        generateId: () => ids[0],
+      }),
+    ).toThrow("conflicts");
+    expect(() =>
+      parseLayerCSV("Well,Annotation,Color\nA1,A,chartreuse", {
+        plateSize: 24,
+        generateId: () => ids[0],
+      }),
+    ).toThrow("invalid");
   });
 });

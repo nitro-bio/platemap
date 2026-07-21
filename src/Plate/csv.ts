@@ -5,13 +5,13 @@ import {
   type PlateSize,
   type WellAnnotation,
 } from "./schemas";
+import { excelCellToIndex, indexToExcelCell } from "./utils";
 import {
   annotationStyleForColor,
   defaultGenerateId,
-  generateValidId,
   type GenerateId,
+  generateValidId,
 } from "./validation";
-import { excelCellToIndex, indexToExcelCell } from "./utils";
 
 const REQUIRED_HEADERS = ["Well", "Annotation"] as const;
 const RESERVED_HEADERS = new Set([
@@ -37,7 +37,8 @@ function parseCSVRows(csv: string): string[][] {
         cell += character;
       }
     } else if (character === '"') {
-      if (cell.length > 0) throw new Error(`CSV row ${rows.length + 1} has an unexpected quote`);
+      if (cell.length > 0)
+        throw new Error(`CSV row ${rows.length + 1} has an unexpected quote`);
       quoted = true;
     } else if (character === ",") {
       row.push(cell);
@@ -70,7 +71,9 @@ function inferMetadataValue(value: string): string | number | boolean {
 
 function stableMetadata(metadata: AnnotationMetadata): string {
   return JSON.stringify(
-    Object.entries(metadata).sort(([left], [right]) => left.localeCompare(right)),
+    Object.entries(metadata).sort(([left], [right]) =>
+      left.localeCompare(right),
+    ),
   );
 }
 
@@ -83,12 +86,16 @@ export function parseLayerCSV<
   const rows = parseCSVRows(csv);
   if (rows.length === 0) throw new Error("CSV is empty");
   const headers = rows[0].map((header) => header.trim());
-  if (new Set(headers).size !== headers.length) throw new Error("CSV contains duplicate columns");
+  if (new Set(headers).size !== headers.length)
+    throw new Error("CSV contains duplicate columns");
   for (const required of REQUIRED_HEADERS) {
-    if (!headers.includes(required)) throw new Error(`CSV is missing required column ${required}`);
+    if (!headers.includes(required))
+      throw new Error(`CSV is missing required column ${required}`);
   }
   const headerIndex = new Map(headers.map((header, index) => [header, index]));
-  const metadataHeaders = headers.filter((header) => !RESERVED_HEADERS.has(header));
+  const metadataHeaders = headers.filter(
+    (header) => !RESERVED_HEADERS.has(header),
+  );
   const generateId = options.generateId ?? defaultGenerateId;
   type Group = {
     id: string;
@@ -102,7 +109,8 @@ export function parseLayerCSV<
 
   rows.slice(1).forEach((values, rowOffset) => {
     const rowNumber = rowOffset + 2;
-    if (values.length > headers.length) throw new Error(`CSV row ${rowNumber} has too many columns`);
+    if (values.length > headers.length)
+      throw new Error(`CSV row ${rowNumber} has too many columns`);
     const get = (header: string) => values[headerIndex.get(header) ?? -1] ?? "";
     const wellText = get("Well").trim();
     const label = get("Annotation").trim();
@@ -112,9 +120,14 @@ export function parseLayerCSV<
     try {
       well = excelCellToIndex(wellText, options.plateSize);
     } catch {
-      throw new Error(`CSV row ${rowNumber}, Well contains invalid coordinate ${wellText}`);
+      throw new Error(
+        `CSV row ${rowNumber}, Well contains invalid coordinate ${wellText}`,
+      );
     }
-    if (well === null) throw new Error(`CSV row ${rowNumber}, Well ${wellText} is outside the plate`);
+    if (well === null)
+      throw new Error(
+        `CSV row ${rowNumber}, Well ${wellText} is outside the plate`,
+      );
     const colorText = get("Color").trim().toLowerCase();
     if (colorText && !annotationStyleForColor(colorText)) {
       throw new Error(`CSV row ${rowNumber}, Color ${colorText} is invalid`);
@@ -135,7 +148,9 @@ export function parseLayerCSV<
         existing.color !== (colorText || null) ||
         stableMetadata(existing.metadata) !== stableMetadata(metadata)
       ) {
-        throw new Error(`CSV row ${rowNumber} conflicts with Annotation Key ${explicitKey}`);
+        throw new Error(
+          `CSV row ${rowNumber} conflicts with Annotation Key ${explicitKey}`,
+        );
       }
       existing.wells.add(well);
     } else {
@@ -154,17 +169,21 @@ export function parseLayerCSV<
   return [...groups.values()]
     .sort((left, right) => left.firstRow - right.firstRow)
     .map((group) => {
-      const annotationStyle = group.color
-        ? annotationStyleForColor(group.color)!
-        : ANNOTATION_STYLES[
-            omittedColorIndex++ % ANNOTATION_STYLES.length
-          ];
+      const explicitStyle = group.color
+        ? annotationStyleForColor(group.color)
+        : null;
+      if (group.color && !explicitStyle) {
+        throw new Error(`CSV contains invalid color ${group.color}`);
+      }
+      const annotationStyle =
+        explicitStyle ??
+        ANNOTATION_STYLES[omittedColorIndex++ % ANNOTATION_STYLES.length];
       return {
-      id: group.id,
-      label: group.label,
-      wells: [...group.wells],
-      annotationStyle,
-      metadata: group.metadata,
+        id: group.id,
+        label: group.label,
+        wells: [...group.wells],
+        annotationStyle,
+        metadata: group.metadata,
       };
     }) as WellAnnotation<WellMetaT>[];
 }
@@ -182,7 +201,11 @@ export function layerToCSV<
 ): string {
   const annotations = Array.isArray(layer) ? layer : layer.annotations;
   const metadataHeaders = [
-    ...new Set(annotations.flatMap((annotation) => Object.keys(annotation.metadata ?? {}))),
+    ...new Set(
+      annotations.flatMap((annotation) =>
+        Object.keys(annotation.metadata ?? {}),
+      ),
+    ),
   ];
   const rows: unknown[][] = [
     ["Well", "Annotation", "Annotation Key", "Color", ...metadataHeaders],

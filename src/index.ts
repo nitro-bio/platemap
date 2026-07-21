@@ -1,3 +1,4 @@
+export { layerToCSV, parseLayerCSV } from "./Plate/csv";
 export {
   createInitialPlateState,
   type LayerMove,
@@ -29,17 +30,6 @@ export {
   RED_STYLE,
   YELLOW_STYLE,
 } from "./Plate/schemas";
-export { layerToCSV, parseLayerCSV } from "./Plate/csv";
-export {
-  documentToPlateState,
-  migrateLegacyPlateState,
-  parsePlateDocument,
-  parsePlateState,
-  plateDocumentSchema,
-  plateDocumentToJSON,
-  plateStateToDocument,
-  type PlateDocumentV1,
-} from "./Plate/validation";
 export {
   columnsToWells,
   csvCellToIndex,
@@ -56,3 +46,13 @@ export {
   wellAnnotationsToCSV,
   wellAnnotationsToList,
 } from "./Plate/utils";
+export {
+  documentToPlateState,
+  migrateLegacyPlateState,
+  type PlateDocumentV1,
+  parsePlateDocument,
+  parsePlateState,
+  plateDocumentSchema,
+  plateDocumentToJSON,
+  plateStateToDocument,
+} from "./Plate/validation";

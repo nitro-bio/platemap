@@ -2,9 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 
 import "./index.css";
+import { usePlateReducer } from "./Plate/hooks/usePlateReducer";
 import { Plate } from "./Plate/Plate";
 import { PlateControls } from "./Plate/PlateControls";
-import { usePlateReducer } from "./Plate/hooks/usePlateReducer";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("Failed to find the root element");
@@ -12,8 +12,10 @@ if (!rootElement) throw new Error("Failed to find the root element");
 const App = () => {
   const [isShiftPressed, setIsShiftPressed] = React.useState(false);
   React.useEffect(() => {
-    const down = (event: KeyboardEvent) => event.key === "Shift" && setIsShiftPressed(true);
-    const up = (event: KeyboardEvent) => event.key === "Shift" && setIsShiftPressed(false);
+    const down = (event: KeyboardEvent) =>
+      event.key === "Shift" && setIsShiftPressed(true);
+    const up = (event: KeyboardEvent) =>
+      event.key === "Shift" && setIsShiftPressed(false);
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
     return () => {

@@ -10,9 +10,9 @@ import type {
 } from "../schemas";
 import {
   defaultGenerateId,
+  type GenerateId,
   generateValidId,
   parseRuntimePlateState,
-  type GenerateId,
 } from "../validation";
 
 export interface PlateState<
@@ -69,15 +69,27 @@ export interface UsePlateParams<
 }
 
 type Action<WellMetaT extends Record<string, unknown>> =
-  | { type: "ADD_LAYER"; name?: string; annotations?: WellAnnotation<WellMetaT>[] }
+  | {
+      type: "ADD_LAYER";
+      name?: string;
+      annotations?: WellAnnotation<WellMetaT>[];
+    }
   | { type: "RENAME_LAYER"; layerId: string; name: string }
   | { type: "DELETE_LAYER"; layerId: string }
   | { type: "MOVE_LAYER"; layerId: string; direction: LayerMove }
   | { type: "SET_ACTIVE_LAYER"; layerId: string }
-  | { type: "SET_LAYER_ANNOTATIONS"; layerId: string; annotations: WellAnnotation<WellMetaT>[] }
+  | {
+      type: "SET_LAYER_ANNOTATIONS";
+      layerId: string;
+      annotations: WellAnnotation<WellMetaT>[];
+    }
   | { type: "SET_ACTIVE_WELL_ANNOTATION"; annotationId: string | null }
   | { type: "SET_PLATE_SIZE"; size: PlateSize }
-  | { type: "SET_SELECTION_WITH_EXCLUDED"; selection: PlateSelection | null; excludedWells: number[] }
+  | {
+      type: "SET_SELECTION_WITH_EXCLUDED";
+      selection: PlateSelection | null;
+      excludedWells: number[];
+    }
   | { type: "SET_EXCLUDED_WELLS"; wells: number[] }
   | { type: "SET_VIEW_MODE"; mode: PlateViewMode }
   | { type: "REPLACE_PLATE_STATE"; state: PlateState<WellMetaT> };
@@ -89,15 +101,16 @@ function nextDefaultLayerName(layers: Array<{ name: string }>): string {
   return `Layer ${index}`;
 }
 
-function findLayerIndex(layers: Array<{ id: string }>, layerId: string): number {
+function findLayerIndex(
+  layers: Array<{ id: string }>,
+  layerId: string,
+): number {
   const index = layers.findIndex((layer) => layer.id === layerId);
   if (index < 0) throw new Error(`Unknown layer ID ${layerId}`);
   return index;
 }
 
-export function transitionPlateState<
-  WellMetaT extends Record<string, unknown>,
->(
+export function transitionPlateState<WellMetaT extends Record<string, unknown>>(
   state: PlateState<WellMetaT>,
   action: Action<WellMetaT>,
   generateId: GenerateId,
@@ -109,7 +122,10 @@ export function transitionPlateState<
       const name = action.name ?? nextDefaultLayerName(state.layers);
       next = {
         ...state,
-        layers: [{ id, name, annotations: action.annotations ?? [] }, ...state.layers],
+        layers: [
+          { id, name, annotations: action.annotations ?? [] },
+          ...state.layers,
+        ],
         activeLayerId: id,
         activeWellAnnotationId: null,
       };
@@ -123,9 +139,12 @@ export function transitionPlateState<
       break;
     }
     case "DELETE_LAYER": {
-      if (state.layers.length === 1) throw new Error("Cannot delete the final layer");
+      if (state.layers.length === 1)
+        throw new Error("Cannot delete the final layer");
       const index = findLayerIndex(state.layers, action.layerId);
-      const layers = state.layers.filter((layer) => layer.id !== action.layerId);
+      const layers = state.layers.filter(
+        (layer) => layer.id !== action.layerId,
+      );
       const deletingActive = state.activeLayerId === action.layerId;
       next = {
         ...state,
@@ -133,7 +152,9 @@ export function transitionPlateState<
         activeLayerId: deletingActive
           ? layers[Math.min(index, layers.length - 1)].id
           : state.activeLayerId,
-        activeWellAnnotationId: deletingActive ? null : state.activeWellAnnotationId,
+        activeWellAnnotationId: deletingActive
+          ? null
+          : state.activeWellAnnotationId,
       };
       break;
     }
@@ -143,7 +164,11 @@ export function transitionPlateState<
         typeof action.direction === "number"
           ? action.direction
           : index + (action.direction === "up" ? -1 : 1);
-      if (!Number.isInteger(target) || target < 0 || target >= state.layers.length) {
+      if (
+        !Number.isInteger(target) ||
+        target < 0 ||
+        target >= state.layers.length
+      ) {
         throw new Error(`Invalid layer target index ${target}`);
       }
       const layers = [...state.layers];
@@ -154,9 +179,14 @@ export function transitionPlateState<
     }
     case "SET_ACTIVE_LAYER":
       findLayerIndex(state.layers, action.layerId);
-      next = action.layerId === state.activeLayerId
-        ? state
-        : { ...state, activeLayerId: action.layerId, activeWellAnnotationId: null };
+      next =
+        action.layerId === state.activeLayerId
+          ? state
+          : {
+              ...state,
+              activeLayerId: action.layerId,
+              activeWellAnnotationId: null,
+            };
       break;
     case "SET_LAYER_ANNOTATIONS": {
       const index = findLayerIndex(state.layers, action.layerId);
@@ -165,8 +195,16 @@ export function transitionPlateState<
       const activeStillExists =
         action.layerId !== state.activeLayerId ||
         !state.activeWellAnnotationId ||
-        action.annotations.some((annotation) => annotation.id === state.activeWellAnnotationId);
-      next = { ...state, layers, activeWellAnnotationId: activeStillExists ? state.activeWellAnnotationId : null };
+        action.annotations.some(
+          (annotation) => annotation.id === state.activeWellAnnotationId,
+        );
+      next = {
+        ...state,
+        layers,
+        activeWellAnnotationId: activeStillExists
+          ? state.activeWellAnnotationId
+          : null,
+      };
       break;
     }
     case "SET_ACTIVE_WELL_ANNOTATION": {
@@ -174,9 +212,13 @@ export function transitionPlateState<
         action.annotationId &&
         !state.layers
           .find((layer) => layer.id === state.activeLayerId)
-          ?.annotations.some((annotation) => annotation.id === action.annotationId)
+          ?.annotations.some(
+            (annotation) => annotation.id === action.annotationId,
+          )
       ) {
-        throw new Error("Active annotation does not belong to the active layer");
+        throw new Error(
+          "Active annotation does not belong to the active layer",
+        );
       }
       next = { ...state, activeWellAnnotationId: action.annotationId };
       break;
@@ -194,27 +236,38 @@ export function transitionPlateState<
         })),
         excludedWells: state.excludedWells.filter((well) => well < action.size),
         selection: state.selection
-          ? { ...state.selection, wells: state.selection.wells.filter((well) => well < action.size) }
+          ? {
+              ...state.selection,
+              wells: state.selection.wells.filter((well) => well < action.size),
+            }
           : null,
       };
       break;
     case "SET_SELECTION_WITH_EXCLUDED": {
       const excluded = new Set(action.excludedWells);
-      const wells = action.selection?.wells.filter((well) => !excluded.has(well)) ?? [];
+      const wells =
+        action.selection?.wells.filter((well) => !excluded.has(well)) ?? [];
       next = {
         ...state,
-        selection: action.selection && wells.length ? { ...action.selection, wells } : null,
+        selection:
+          action.selection && wells.length
+            ? { ...action.selection, wells }
+            : null,
         excludedWells: action.excludedWells,
       };
       break;
     }
     case "SET_EXCLUDED_WELLS": {
       const excluded = new Set(action.wells);
-      const wells = state.selection?.wells.filter((well) => !excluded.has(well)) ?? [];
+      const wells =
+        state.selection?.wells.filter((well) => !excluded.has(well)) ?? [];
       next = {
         ...state,
         excludedWells: action.wells,
-        selection: state.selection && wells.length ? { ...state.selection, wells } : null,
+        selection:
+          state.selection && wells.length
+            ? { ...state.selection, wells }
+            : null,
       };
       break;
     }
@@ -232,9 +285,10 @@ export function createInitialPlateState<
   WellMetaT extends Record<string, unknown> = AnnotationMetadata,
 >(params: UsePlateParams<WellMetaT>): PlateState<WellMetaT> {
   const generateId = params.generateId ?? defaultGenerateId;
-  const layers = params.initialLayers === undefined
-    ? [{ id: generateValidId(generateId), name: "Layer 1", annotations: [] }]
-    : params.initialLayers;
+  const layers =
+    params.initialLayers === undefined
+      ? [{ id: generateValidId(generateId), name: "Layer 1", annotations: [] }]
+      : params.initialLayers;
   const activeLayerId = params.initialActiveLayerId ?? layers[0]?.id;
   return parseRuntimePlateState<WellMetaT>({
     plateSize: params.initialPlateSize,
@@ -249,7 +303,9 @@ export function createInitialPlateState<
 
 export const usePlateReducer = <
   WellMetaT extends Record<string, unknown> = AnnotationMetadata,
->(params: UsePlateParams<WellMetaT>): {
+>(
+  params: UsePlateParams<WellMetaT>,
+): {
   plateState: PlateState<WellMetaT>;
   plateActions: PlateActions<WellMetaT>;
 } => {
@@ -266,21 +322,32 @@ export const usePlateReducer = <
       addLayer: (name) => dispatch({ type: "ADD_LAYER", name }),
       addLayerWithAnnotations: (annotations, name) =>
         dispatch({ type: "ADD_LAYER", annotations, name }),
-      renameLayer: (layerId, name) => dispatch({ type: "RENAME_LAYER", layerId, name }),
+      renameLayer: (layerId, name) =>
+        dispatch({ type: "RENAME_LAYER", layerId, name }),
       deleteLayer: (layerId) => dispatch({ type: "DELETE_LAYER", layerId }),
-      moveLayer: (layerId, direction) => dispatch({ type: "MOVE_LAYER", layerId, direction }),
-      setActiveLayer: (layerId) => dispatch({ type: "SET_ACTIVE_LAYER", layerId }),
+      moveLayer: (layerId, direction) =>
+        dispatch({ type: "MOVE_LAYER", layerId, direction }),
+      setActiveLayer: (layerId) =>
+        dispatch({ type: "SET_ACTIVE_LAYER", layerId }),
       setLayerAnnotations: (layerId, annotations) =>
         dispatch({ type: "SET_LAYER_ANNOTATIONS", layerId, annotations }),
       setActiveWellAnnotation: (annotationId) =>
         dispatch({ type: "SET_ACTIVE_WELL_ANNOTATION", annotationId }),
       setPlateSize: (size) => dispatch({ type: "SET_PLATE_SIZE", size }),
       setSelectionWithExcluded: ({ selection, excludedWells }) =>
-        dispatch({ type: "SET_SELECTION_WITH_EXCLUDED", selection, excludedWells }),
-      setExcludedWells: (wells) => dispatch({ type: "SET_EXCLUDED_WELLS", wells }),
+        dispatch({
+          type: "SET_SELECTION_WITH_EXCLUDED",
+          selection,
+          excludedWells,
+        }),
+      setExcludedWells: (wells) =>
+        dispatch({ type: "SET_EXCLUDED_WELLS", wells }),
       setViewMode: (mode) => dispatch({ type: "SET_VIEW_MODE", mode }),
       replacePlateState: (newState) =>
-        dispatch({ type: "REPLACE_PLATE_STATE", state: parseRuntimePlateState<WellMetaT>(newState) }),
+        dispatch({
+          type: "REPLACE_PLATE_STATE",
+          state: parseRuntimePlateState<WellMetaT>(newState),
+        }),
     },
   };
 };

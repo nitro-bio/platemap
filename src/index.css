@@ -130,9 +130,14 @@
   padding: 0;
   position: absolute;
   top: calc(14% + var(--platemap-layer-index) * var(--platemap-stack-offset));
-  transform: translateY(calc(var(--platemap-layer-relative) * var(--platemap-stack-depth))) rotateX(55deg) rotateZ(-18deg) scale(0.78);
+  transform: translateY(
+      calc(var(--platemap-layer-relative) * var(--platemap-stack-depth))
+    )
+    rotateX(55deg) rotateZ(-18deg) scale(0.78);
   transform-origin: center;
-  transition: transform 240ms ease, opacity 240ms ease;
+  transition:
+    transform 240ms ease,
+    opacity 240ms ease;
   width: 84%;
   z-index: calc(var(--platemap-layer-count) - var(--platemap-layer-index));
 }
