@@ -4,6 +4,7 @@ export {
   type LayerMove,
   type PlateActions,
   type PlateState,
+  transitionPlateState,
   type UsePlateParams,
   usePlateReducer,
 } from "./Plate/hooks/usePlateReducer";
@@ -12,6 +13,7 @@ export { PlateControls, type PlateControlsProps } from "./Plate/PlateControls";
 export type {
   AnnotationColor,
   AnnotationMetadata,
+  AnnotationMetadataValue,
   AnnotationStyle,
   PlateLayer,
   PlateSelection,
@@ -42,6 +44,7 @@ export {
   indexToExcelCell,
   plateSizeToRowsCols,
   randomizeWellAnnotations,
+  rangeToWells,
   rowsToWells,
   wellAnnotationsToCSV,
   wellAnnotationsToList,

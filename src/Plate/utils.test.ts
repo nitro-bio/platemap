@@ -9,6 +9,7 @@ import {
   indexToExcelCell,
   plateSizeToRowsCols,
   randomizeWellAnnotations,
+  rangeToWells,
   rowsToWells,
   wellAnnotationsToCSV,
   wellAnnotationsToList,
@@ -63,6 +64,18 @@ describe("row, column, and edge helpers", () => {
 
   test("validates rows against row count rather than column count", () => {
     expect(rowsToWells({ plateSize: 96, rows: [8] })).toEqual([]);
+  });
+
+  test("builds an inclusive rectangular range in either direction", () => {
+    expect(rangeToWells({ plateSize: 96, start: 0, end: 13 })).toEqual([
+      0, 1, 12, 13,
+    ]);
+    expect(rangeToWells({ plateSize: 96, start: 13, end: 0 })).toEqual([
+      0, 1, 12, 13,
+    ]);
+    expect(() => rangeToWells({ plateSize: 96, start: 0, end: 96 })).toThrow(
+      "outside the plate",
+    );
   });
 });
 
