@@ -36,8 +36,9 @@
   --platemap-control-active: var(--color-control-active);
   --platemap-control-destructive: var(--color-control-destructive);
   --platemap-control-focus: var(--color-control-focus);
-  --platemap-stack-depth: 3rem;
-  --platemap-stack-offset-y: clamp(2.75rem, 4vw, 3.5rem);
+  --platemap-stack-depth: 1.5rem;
+  --platemap-stack-offset-x: clamp(4.5rem, 7vw, 7rem);
+  --platemap-stack-offset-y: clamp(2.25rem, 3.5vw, 3.25rem);
   --platemap-overflow-background: #fff;
   --platemap-overflow-text: #18181b;
 }
@@ -130,13 +131,13 @@
   cursor: pointer;
   display: block;
   filter: saturate(calc(1 - var(--platemap-layer-distance) * 0.04));
-  left: 18%;
+  left: 8%;
   opacity: calc(1 - var(--platemap-layer-distance) * 0.06);
   padding: 0;
   position: absolute;
   top: 34%;
   transform: translate3d(
-      0,
+      calc(var(--platemap-layer-position) * var(--platemap-stack-offset-x)),
       calc(
         var(--platemap-layer-position) *
         -1 *
@@ -144,31 +145,20 @@
       ),
       calc(var(--platemap-layer-index) * -1 * var(--platemap-stack-depth))
     )
-    rotateX(5deg) rotateY(-8deg) rotateZ(-1.5deg)
-    scale(calc(0.97 - var(--platemap-layer-distance) * 0.025));
+    rotateX(3deg) rotateY(-6deg) rotateZ(-0.75deg);
   transform-origin: center;
   transform-style: preserve-3d;
   transition:
     transform 240ms ease,
     opacity 240ms ease,
     filter 240ms ease;
-  width: 64%;
+  width: 56%;
   z-index: var(--platemap-layer-z);
 }
 
 .platemap-isometric-plane[aria-current="true"] {
   filter: none;
   opacity: 1;
-  transform: translate3d(
-      0,
-      calc(
-        var(--platemap-layer-position) *
-        -1 *
-        var(--platemap-stack-offset-y)
-      ),
-      1rem
-    )
-    rotateX(3deg) rotateY(-6deg) rotateZ(-0.5deg) scale(1);
   z-index: calc(var(--platemap-layer-count) + 1);
 }
 
