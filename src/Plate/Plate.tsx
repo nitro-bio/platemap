@@ -367,18 +367,6 @@ const Well = <WellMetaT extends Record<string, unknown>>({
   const content = (
     <>
       <span
-        aria-hidden="true"
-        className={cn(
-          "absolute -inset-1",
-          isSelected && "bg-[var(--color-well-selected)]/80",
-          isExcluded && "bg-[var(--color-well-excluded)]",
-          isHovered &&
-            !isSelected &&
-            !isExcluded &&
-            "bg-[var(--color-well-hovered)]/30",
-        )}
-      />
-      <span
         className={cn(
           plateSize === 24 && "text-2xl",
           plateSize === 48 && "text-xl",
@@ -426,6 +414,18 @@ const Well = <WellMetaT extends Record<string, unknown>>({
   );
   return (
     <div className="relative isolate h-full">
+      <span
+        aria-hidden="true"
+        className={cn(
+          "platemap-well-state-background pointer-events-none absolute -inset-1",
+          isSelected && "bg-[var(--color-well-selected)]/80",
+          isExcluded && "bg-[var(--color-well-excluded)]",
+          isHovered &&
+            !isSelected &&
+            !isExcluded &&
+            "bg-[var(--color-well-hovered)]/30",
+        )}
+      />
       {interactive ? (
         <button
           type="button"

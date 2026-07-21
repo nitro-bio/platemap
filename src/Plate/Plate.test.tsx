@@ -64,6 +64,14 @@ describe("Plate accessibility and layers", () => {
     expect(well.getAttribute("aria-pressed")).toBe("false");
     fireEvent.click(well);
     expect(well.getAttribute("aria-pressed")).toBe("true");
+    const selectionBackground = well.parentElement?.querySelector(
+      ":scope > .platemap-well-state-background",
+    );
+    expect(selectionBackground).toBeTruthy();
+    expect(well.contains(selectionBackground)).toBe(false);
+    expect(selectionBackground?.className).toContain(
+      "bg-[var(--color-well-selected)]/80",
+    );
   });
 
   test("disables excluded wells and labels row and column controls", () => {
