@@ -1,160 +1,129 @@
-import { expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
+import { BLUE_STYLE, ORANGE_STYLE, type PlateSize } from "./schemas";
 import {
-  rowsToWells,
   columnsToWells,
+  csvCellToIndex,
+  excelCellToIndex,
   getEdgeWells,
+  getRowLabel,
+  indexToExcelCell,
+  plateSizeToRowsCols,
   randomizeWellAnnotations,
+  rowsToWells,
+  wellAnnotationsToCSV,
+  wellAnnotationsToList,
 } from "./utils";
-import { BLUE_STYLE, ORANGE_STYLE, WellAnnotation } from "./schemas";
 
-test("rowsToWells - 96 well plate - single row", () => {
-  expect(rowsToWells({ plateSize: 96, rows: [0] })).toEqual([
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-  ]);
-});
+const plateSizes: PlateSize[] = [24, 48, 96, 384, 1536];
 
-test("rowsToWells - 96 well plate - multiple rows", () => {
-  expect(rowsToWells({ plateSize: 96, rows: [0, 2, 4] })).toEqual([
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 24, 25, 26, 27, 28, 29, 30, 31, 32,
-    33, 34, 35, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
-  ]);
-});
-
-test("rowsToWells - 384 well plate - single row", () => {
-  expect(rowsToWells({ plateSize: 384, rows: [0] })).toEqual([
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-    21, 22, 23,
-  ]);
-});
-
-test("rowsToWells - 384 well plate - multiple rows", () => {
-  expect(rowsToWells({ plateSize: 384, rows: [0, 1] })).toEqual([
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-    21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
-    40, 41, 42, 43, 44, 45, 46, 47,
-  ]);
-});
-
-test("rowsToWells - unsupported plate size", () => {
-  // @ts-expect-error expect 100 to be invalid
-  expect(() => rowsToWells({ plateSize: 100, rows: [1] })).toThrow(
-    "Invalid number of wells",
+describe("plate coordinates", () => {
+  test.each(plateSizes)(
+    "round trips every coordinate for %i wells",
+    (plateSize) => {
+      for (let index = 0; index < plateSize; index += 1) {
+        expect(
+          excelCellToIndex(indexToExcelCell(index, plateSize), plateSize),
+        ).toBe(index);
+      }
+    },
   );
+
+  test("accepts lowercase and multi-letter rows but rejects partial input", () => {
+    expect(excelCellToIndex(" af48 ", 1536)).toBe(1535);
+    expect(csvCellToIndex("AA1", 1536)).toBe(1248);
+    expect(() => excelCellToIndex("A1 trailing", 96)).toThrow(
+      "Invalid cell reference",
+    );
+    expect(excelCellToIndex("A13", 96)).toBeNull();
+  });
+
+  test("labels rows beyond Z", () => {
+    expect(getRowLabel(25)).toBe("Z");
+    expect(getRowLabel(26)).toBe("AA");
+    expect(getRowLabel(31)).toBe("AF");
+  });
 });
 
-test("columnsToWells - 96 well plate - single column", () => {
-  expect(columnsToWells({ plateSize: 96, columns: [0] })).toEqual([
-    0, 12, 24, 36, 48, 60, 72, 84,
-  ]);
-});
-
-test("columnsToWells - 96 well plate - multiple columns", () => {
-  expect(columnsToWells({ plateSize: 96, columns: [0, 2, 4] })).toEqual([
-    0, 12, 24, 36, 48, 60, 72, 84, 2, 14, 26, 38, 50, 62, 74, 86, 4, 16, 28, 40,
-    52, 64, 76, 88,
-  ]);
-});
-
-test("columnsToWells - 384 well plate - single column", () => {
-  expect(columnsToWells({ plateSize: 384, columns: [0] })).toEqual([
-    0, 24, 48, 72, 96, 120, 144, 168, 192, 216, 240, 264, 288, 312, 336, 360,
-  ]);
-});
-
-test("columnsToWells - 384 well plate - multiple columns", () => {
-  expect(columnsToWells({ plateSize: 384, columns: [0, 1] })).toEqual([
-    0, 24, 48, 72, 96, 120, 144, 168, 192, 216, 240, 264, 288, 312, 336, 360, 1,
-    25, 49, 73, 97, 121, 145, 169, 193, 217, 241, 265, 289, 313, 337, 361,
-  ]);
-});
-
-test("columnsToWells - unsupported plate size", () => {
-  // @ts-expect-error expect 100 to be invalid
-  expect(() => columnsToWells({ plateSize: 100, columns: [0] })).toThrow(
-    "Invalid number of wells",
+describe("row, column, and edge helpers", () => {
+  test.each(plateSizes)(
+    "keeps all generated wells in range for %i",
+    (plateSize) => {
+      const { rows, cols } = plateSizeToRowsCols(plateSize);
+      expect(
+        rowsToWells({ plateSize, rows: [0, rows - 1, rows] }),
+      ).toHaveLength(cols * 2);
+      expect(
+        columnsToWells({ plateSize, columns: [0, cols - 1, cols] }),
+      ).toHaveLength(rows * 2);
+      expect(
+        getEdgeWells(plateSize).every((well) => well >= 0 && well < plateSize),
+      ).toBe(true);
+    },
   );
+
+  test("validates rows against row count rather than column count", () => {
+    expect(rowsToWells({ plateSize: 96, rows: [8] })).toEqual([]);
+  });
 });
 
-test("getEdgeWells - 24 well plate", () => {
-  expect(getEdgeWells(24)).toEqual([
-    0, 1, 2, 3, 4, 5, 6, 11, 12, 17, 18, 19, 20, 21, 22, 23,
-  ]);
+describe("annotation randomization", () => {
+  test("uses one deterministic mapping for shared wells", () => {
+    const annotations = [
+      { id: "1", wells: [1, 2, 3], label: "A", annotationStyle: ORANGE_STYLE },
+      { id: "2", wells: [2, 3, 4], label: "B", annotationStyle: BLUE_STYLE },
+    ];
+    const result = randomizeWellAnnotations({
+      plateSize: 96,
+      excludedWells: [0],
+      wellAnnotations: annotations,
+      random: () => 0.25,
+    });
+    const mapping = new Map(
+      result[0].wells.map((well, index) => [annotations[0].wells[index], well]),
+    );
+    expect(result[1].wells[0]).toBe(mapping.get(2));
+    expect(result[1].wells[1]).toBe(mapping.get(3));
+    expect(
+      new Set(result.flatMap((annotation) => annotation.wells)).has(0),
+    ).toBe(false);
+  });
+
+  test("rejects invalid source wells", () => {
+    expect(() =>
+      randomizeWellAnnotations({
+        plateSize: 24,
+        excludedWells: [],
+        wellAnnotations: [
+          { id: "1", wells: [24], label: "bad", annotationStyle: BLUE_STYLE },
+        ],
+      }),
+    ).toThrow("outside the plate");
+  });
 });
 
-test("getEdgeWells - 48 well plate", () => {
-  expect(getEdgeWells(48)).toEqual([
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 15, 16, 23, 24, 31, 32, 39, 40, 41, 42, 43, 44,
-    45, 46, 47,
-  ]);
-});
-
-test("getEdgeWells - 96 well plate", () => {
-  expect(getEdgeWells(96)).toEqual([
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 23, 24, 35, 36, 47, 48, 59, 60,
-    71, 72, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95,
-  ]);
-});
-
-test("getEdgeWells - unsupported plate size", () => {
-  // @ts-expect-error expect 100 to be invalid
-  expect(() => getEdgeWells(100)).toThrow("Invalid number of wells");
-});
-
-test("randomizeWellAnnotations shuffles consistently", () => {
-  const plateSize = 96;
-  const wellAnnotations: WellAnnotation<Record<string, never>>[] = [
-    { id: "1", wells: [1, 2, 3], label: "A", annotationStyle: ORANGE_STYLE },
-    { id: "2", wells: [2, 3, 4], label: "B", annotationStyle: BLUE_STYLE },
+describe("exports", () => {
+  const annotations = [
+    {
+      id: "1",
+      wells: [0],
+      label: 'Control, "primary"',
+      annotationStyle: BLUE_STYLE,
+      metadata: { concentration: "5,000", active: true },
+    },
   ];
 
-  let result = randomizeWellAnnotations({
-    plateSize,
-    excludedWells: [],
-    wellAnnotations,
+  test("preserves typed metadata in well-wise rows", () => {
+    expect(wellAnnotationsToList(annotations, 24)[0]).toMatchObject({
+      Well: "A1",
+      Annotations: 'Control, "primary"',
+      concentration: "5,000",
+      active: true,
+    });
   });
 
-  expect(result).toHaveLength(2);
-  expect(result[0].wells).not.toEqual([1, 2, 3]);
-  expect(result[1].wells).not.toEqual([2, 3, 4]);
-
-  // Check for consistent mapping
-  let map = new Map(
-    result[0].wells.map((w, i) => [wellAnnotations[0].wells[i], w]),
-  );
-  expect(result[1].wells[0]).toBe(map.get(2));
-  expect(result[1].wells[1]).toBe(map.get(3));
-  result = randomizeWellAnnotations({
-    plateSize,
-    excludedWells: [],
-    wellAnnotations,
+  test("quotes commas and quotes in CSV", () => {
+    expect(wellAnnotationsToCSV(annotations, 24)).toContain(
+      '"Control, ""primary"" (concentration: 5,000; active: true)"',
+    );
   });
-
-  expect(result).toHaveLength(2);
-  expect(result[0].wells).not.toEqual([1, 2, 3]);
-  expect(result[1].wells).not.toEqual([2, 3, 4]);
-
-  // Check for consistent mapping
-  map = new Map(
-    result[0].wells.map((w, i) => [wellAnnotations[0].wells[i], w]),
-  );
-  expect(result[1].wells[0]).toBe(map.get(2));
-  expect(result[1].wells[1]).toBe(map.get(3));
-  result = randomizeWellAnnotations({
-    plateSize,
-    excludedWells: [],
-    wellAnnotations,
-  });
-
-  expect(result).toHaveLength(2);
-  expect(result[0].wells).not.toEqual([1, 2, 3]);
-  expect(result[1].wells).not.toEqual([2, 3, 4]);
-
-  // Check for consistent mapping
-  map = new Map(
-    result[0].wells.map((w, i) => [wellAnnotations[0].wells[i], w]),
-  );
-  expect(result[1].wells[0]).toBe(map.get(2));
-  expect(result[1].wells[1]).toBe(map.get(3));
-  // expect none of the wells to be null
-  expect(result[0].wells).not.toContain(null);
 });

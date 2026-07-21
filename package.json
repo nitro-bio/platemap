@@ -2,81 +2,65 @@
   "type": "module",
   "name": "@nitro-bio/platemap",
   "private": false,
-  "version": "1.0.11",
+  "version": "2.0.0",
+  "packageManager": "pnpm@10.33.0",
+  "description": "Accessible React plate-layout primitives",
+  "license": "GPL-3.0-or-later",
+  "author": "Nishant Jha",
+  "keywords": [
+    "react",
+    "laboratory",
+    "plate",
+    "platemap"
+  ],
   "scripts": {
-    "build:ci": "vite build && pnpm build-css",
-    "build": "pnpm lint && vite build && pnpm build-css",
-    "build-css": "npx @tailwindcss/cli -i ./src/index.css -o ./nitro-platemap.css && mv ./nitro-platemap.css ./dist/nitro-platemap.css",
     "dev": "vite --port 3000",
-    "format": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\" --config package.json",
-    "format:fix": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\" --config package.json",
-    "lint": "tsc && eslint .",
-    "lint:fix": "eslint .",
-    "lint:watch": "nodemon --watch src --ext js,jsx,ts,tsx --exec pnpm lint",
-    "prepublishOnly": "pnpm lint && pnpm format && pnpm build",
-    "build:watch": "nodemon --watch src --ext js,jsx,ts,tsx,json,css,scss,html --exec pnpm build",
+    "lint": "biome check . && tsc --noEmit",
+    "lint:fix": "biome check . --write --unsafe && tsc --noEmit",
+    "format": "biome format . --check",
+    "format:fix": "biome format . --write",
+    "build": "pnpm lint && vite build && pnpm build-css",
+    "build:ci": "vite build && pnpm build-css",
+    "build-css": "tailwindcss -i ./src/index.css -o ./dist/nitro-platemap.css --minify",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "pnpm test && pnpm build"
   },
   "dependencies": {
-    "@eslint/js": "^9.32.0",
-    "react-selecto": "^1.26.3",
-    "tailwindcss": "^4.1.11"
+    "react-selecto": "^1.26.3"
   },
   "devDependencies": {
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "@tailwindcss/vite": "^4.1.11",
-    "@vitejs/plugin-react": "^4.7.0",
-    "eslint": "^9.32.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.20",
-    "globals": "^16.3.0",
-    "nodemon": "^3.1.10",
-    "prettier": "^3.6.2",
-    "prettier-plugin-tailwindcss": "^0.6.14",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "rollup-plugin-analyzer": "^4.0.0",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.38.0",
-    "vite": "^7.0.6",
+    "@biomejs/biome": "^2.5.4",
+    "@tailwindcss/cli": "^4.3.3",
+    "@tailwindcss/vite": "^4.3.3",
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.2.0",
+    "jsdom": "^29.0.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.6",
     "vite-plugin-dts": "^4.5.4",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.10"
   },
-  "license": "GPL-3.0-or-later",
   "peerDependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": ">=18.2.0 <20",
+    "react-dom": ">=18.2.0 <20"
   },
   "files": [
     "dist"
   ],
   "styles": "./dist/nitro-platemap.css",
-  "main": "./dist/nitro-platemap.umd.js",
+  "main": "./dist/nitro-platemap.es.js",
   "module": "./dist/nitro-platemap.es.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/nitro-platemap.es.js",
-      "require": "./dist/nitro-platemap.umd.js"
+      "import": "./dist/nitro-platemap.es.js"
     },
-    "./dist/nitro-platemap.css": {
-      "import": "./dist/nitro-platemap.css",
-      "require": "./dist/nitro-platemap.css"
-    }
-  },
-  "description": "Platemap React Component",
-  "keywords": [
-    "ui",
-    "components",
-    "platemap"
-  ],
-  "author": "Nishant Jha",
-  "prettier": {
-    "plugins": [
-      "prettier-plugin-tailwindcss"
-    ]
+    "./dist/nitro-platemap.css": "./dist/nitro-platemap.css"
   }
 }

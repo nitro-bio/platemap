@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
-import { Plate } from "./Plate/Plate";
 import { usePlateReducer } from "./Plate/hooks/usePlateReducer";
+import { Plate } from "./Plate/Plate";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("Failed to find the root element");

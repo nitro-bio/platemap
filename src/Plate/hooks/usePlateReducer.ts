@@ -1,8 +1,8 @@
 import { useMemo, useReducer } from "react";
 
-import { PlateSelection, PlateSize, WellAnnotation } from "../schemas";
+import type { PlateSelection, PlateSize, WellAnnotation } from "../schemas";
 
-export interface PlateState<WellMetaT extends Record<string, string>> {
+export interface PlateState<WellMetaT extends Record<string, unknown>> {
   plateSize: PlateSize;
   wellAnnotations: WellAnnotation<WellMetaT>[];
   selection: PlateSelection | null;
@@ -10,7 +10,7 @@ export interface PlateState<WellMetaT extends Record<string, string>> {
   excludedWells: number[];
 }
 
-export interface PlateActions<WellMetaT extends Record<string, string>> {
+export interface PlateActions<WellMetaT extends Record<string, unknown>> {
   setPlateSize: (size: PlateSize) => void;
   setWellAnnotations: (anns: WellAnnotation<WellMetaT>[]) => void;
   setActiveWellAnnotation: (ann: WellAnnotation<WellMetaT> | null) => void;
@@ -22,7 +22,7 @@ export interface PlateActions<WellMetaT extends Record<string, string>> {
   setPlateState: (newState: PlateState<WellMetaT>) => void;
 }
 
-export interface UsePlateParams<WellMetaT extends Record<string, string>> {
+export interface UsePlateParams<WellMetaT extends Record<string, unknown>> {
   initialPlateSize: PlateSize;
   initialCSV?: string | null;
   initialWellAnnotations?: WellAnnotation<WellMetaT>[];
@@ -30,7 +30,7 @@ export interface UsePlateParams<WellMetaT extends Record<string, string>> {
   initialExcludedWells?: number[];
 }
 
-type Action<WellMetaT extends Record<string, string>> =
+type Action<WellMetaT extends Record<string, unknown>> =
   | { type: "SET_PLATE_SIZE"; payload: PlateSize }
   | { type: "SET_WELL_ANNOTATIONS"; payload: WellAnnotation<WellMetaT>[] }
   | {
@@ -44,7 +44,7 @@ type Action<WellMetaT extends Record<string, string>> =
   | { type: "SET_EXCLUDED_WELLS"; payload: number[] }
   | { type: "SET_PLATE_STATE"; payload: PlateState<WellMetaT> };
 
-function plateReducer<WellMetaT extends Record<string, string>>(
+function plateReducer<WellMetaT extends Record<string, unknown>>(
   state: PlateState<WellMetaT>,
   action: Action<WellMetaT>,
 ): PlateState<WellMetaT> {
@@ -72,7 +72,7 @@ function plateReducer<WellMetaT extends Record<string, string>>(
   }
 }
 
-export const usePlateReducer = <WellMetaT extends Record<string, string>>({
+export const usePlateReducer = <WellMetaT extends Record<string, unknown>>({
   initialPlateSize,
   initialWellAnnotations,
   initialSelection,

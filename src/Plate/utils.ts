@@ -1,301 +1,252 @@
-import { PlateSize, WellAnnotation, WellAnnotationCSVRow } from "./schemas";
+import type {
+  PlateSize,
+  WellAnnotation,
+  WellAnnotationCSVRow,
+} from "./schemas";
+
+const PLATE_DIMENSIONS: Record<PlateSize, { rows: number; cols: number }> = {
+  24: { rows: 4, cols: 6 },
+  48: { rows: 6, cols: 8 },
+  96: { rows: 8, cols: 12 },
+  384: { rows: 16, cols: 24 },
+  1536: { rows: 32, cols: 48 },
+};
 
 export const plateSizeToRowsCols = (plateSize: PlateSize) => {
-  switch (plateSize) {
-    case 24:
-      return { rows: 4, cols: 6 };
-    case 48:
-      return { rows: 6, cols: 8 };
-    case 96:
-      return { rows: 8, cols: 12 };
-    case 384:
-      return { rows: 16, cols: 24 };
-    case 1536:
-      return { rows: 32, cols: 48 };
-    default:
-      throw new Error(`Invalid number of wells ${plateSize}`);
+  const dimensions = PLATE_DIMENSIONS[plateSize];
+  if (!dimensions) throw new Error(`Invalid number of wells ${plateSize}`);
+  return dimensions;
+};
+
+export const getRowLabel = (row: number): string => {
+  if (!Number.isInteger(row) || row < 0)
+    throw new RangeError("Row must be non-negative");
+  let value = row + 1;
+  let label = "";
+  while (value > 0) {
+    value -= 1;
+    label = String.fromCharCode(65 + (value % 26)) + label;
+    value = Math.floor(value / 26);
   }
+  return label;
 };
 
-export const indexToExcelCell = (index: number, plateSize: PlateSize) => {
+export const getColLabel = (column: number): string => `${column + 1}`;
+
+export const indexToExcelCell = (
+  index: number,
+  plateSize: PlateSize,
+): string => {
+  if (!Number.isInteger(index) || index < 0 || index >= plateSize) {
+    throw new RangeError(
+      `Well index ${index} is outside a ${plateSize}-well plate`,
+    );
+  }
   const { cols } = plateSizeToRowsCols(plateSize);
-  const row = Math.floor(index / cols);
-  const col = index % cols;
-  return `${getRowLabel(row)}${col + 1}`;
+  return `${getRowLabel(Math.floor(index / cols))}${(index % cols) + 1}`;
 };
 
-// Function to convert Excel cell reference to index
 export const excelCellToIndex = (
   cell: string,
   plateSize: PlateSize,
 ): number | null => {
+  const match = /^([A-Za-z]+)([1-9]\d*)$/.exec(cell.trim());
+  if (!match) throw new Error(`Invalid cell reference: ${cell}`);
   const { rows, cols } = plateSizeToRowsCols(plateSize);
-  const match = cell.match(/([A-Z]+)(\d+)/);
-
-  if (!match) {
-    throw new Error(`Invalid cell reference: ${cell}`);
-  }
-
-  const colPart = parseInt(match[2], 10) - 1;
-
-  const rowPart =
+  const row =
     match[1]
+      .toUpperCase()
       .split("")
-      .reduce((acc, char) => acc * 26 + char.charCodeAt(0) - 64, 0) - 1;
-  if (rowPart >= rows || colPart >= cols) {
-    console.debug(
-      `Invalid cell reference ${cell} for plate with ${plateSize} wells`,
-    );
-    return null;
-  }
-
-  const wellIndex = rowPart * cols + colPart;
-  return wellIndex;
+      .reduce(
+        (value, character) => value * 26 + character.charCodeAt(0) - 64,
+        0,
+      ) - 1;
+  const column = Number.parseInt(match[2], 10) - 1;
+  if (row < 0 || row >= rows || column < 0 || column >= cols) return null;
+  return row * cols + column;
 };
 
-// Given the total number of wells and a list of row numbers, return the indices of the wells in those rows
+export const csvCellToIndex = excelCellToIndex;
+
 export const rowsToWells = ({
   plateSize,
   rows,
 }: {
   plateSize: PlateSize;
   rows: number[];
-}) => {
-  const { cols } = plateSizeToRowsCols(plateSize);
-  const wellIndices: number[] = [];
-
-  for (const row of rows) {
-    if (row < 0 || row > cols) {
-      console.debug(
-        `Row number ${row} is out of bounds for plate with ${cols} columns`,
-      );
-      // skip this row, but attempt to process the rest
-      continue;
-    }
-
-    Array.from({ length: cols }).forEach((_, colIdx) => {
-      const wellIndex = row * cols + colIdx;
-      wellIndices.push(wellIndex);
-    });
-  }
-
-  return wellIndices;
+}): number[] => {
+  const { rows: rowCount, cols } = plateSizeToRowsCols(plateSize);
+  return rows.flatMap((row) =>
+    Number.isInteger(row) && row >= 0 && row < rowCount
+      ? Array.from({ length: cols }, (_, column) => row * cols + column)
+      : [],
+  );
 };
 
-// Given the total number of wells and a list of column numbers, return the indices of the wells in those columns
 export const columnsToWells = ({
   plateSize,
   columns,
 }: {
   plateSize: PlateSize;
   columns: number[];
-}) => {
+}): number[] => {
   const { rows, cols } = plateSizeToRowsCols(plateSize);
-  const wellIndices: number[] = [];
-
-  for (const col of columns) {
-    if (col < 0 || col >= cols) {
-      console.debug(
-        `Column number ${col} is out of bounds for plate with ${cols} columns`,
-      );
-      // skip this column, but attempt to process the rest
-      continue;
-    }
-
-    Array.from({ length: rows }).forEach((_, rowIdx) => {
-      const wellIndex = rowIdx * cols + col;
-      wellIndices.push(wellIndex);
-    });
-  }
-
-  return wellIndices;
+  return columns.flatMap((column) =>
+    Number.isInteger(column) && column >= 0 && column < cols
+      ? Array.from({ length: rows }, (_, row) => row * cols + column)
+      : [],
+  );
 };
 
-// Given the total number of wells return the indices of all the wells on the perimeter of the plate
-export const getEdgeWells = (plateSize: PlateSize) => {
+export const getEdgeWells = (plateSize: PlateSize): number[] => {
   const { rows, cols } = plateSizeToRowsCols(plateSize);
-  const perimeterWells: number[] = [];
+  return Array.from({ length: plateSize }, (_, index) => index).filter(
+    (index) => {
+      const row = Math.floor(index / cols);
+      const column = index % cols;
+      return (
+        row === 0 || row === rows - 1 || column === 0 || column === cols - 1
+      );
+    },
+  );
+};
 
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      if (row === 0 || row === rows - 1 || col === 0 || col === cols - 1) {
-        perimeterWells.push(row * cols + col);
-      }
-    }
+const shuffled = (values: number[], random: () => number): number[] => {
+  const result = [...values];
+  for (let index = result.length - 1; index > 0; index -= 1) {
+    const target = Math.floor(random() * (index + 1));
+    [result[index], result[target]] = [result[target], result[index]];
   }
-
-  return perimeterWells;
+  return result;
 };
 
 export const randomizeWellAnnotations = <
-  WellMetaT extends Record<string, string>,
+  WellMetaT extends Record<string, unknown>,
 >({
   plateSize,
   excludedWells,
   wellAnnotations,
+  random = Math.random,
 }: {
-  plateSize: number;
+  plateSize: PlateSize;
   excludedWells: number[];
   wellAnnotations: WellAnnotation<WellMetaT>[];
+  random?: () => number;
 }): WellAnnotation<WellMetaT>[] => {
-  const availableWells = Array.from({ length: plateSize }, (_, i) => i).filter(
-    (well) => !excludedWells.includes(well),
+  const excluded = new Set(excludedWells);
+  const sourceWells = [
+    ...new Set(wellAnnotations.flatMap((annotation) => annotation.wells)),
+  ];
+  if (
+    sourceWells.some(
+      (well) => !Number.isInteger(well) || well < 0 || well >= plateSize,
+    )
+  ) {
+    throw new RangeError("Annotations contain a well outside the plate");
+  }
+  const movableSources = sourceWells.filter((well) => !excluded.has(well));
+  const destinations = shuffled(
+    Array.from({ length: plateSize }, (_, index) => index).filter(
+      (well) => !excluded.has(well),
+    ),
+    random,
+  ).slice(0, movableSources.length);
+  const destinationBySource = new Map(
+    movableSources.map((source, index) => [source, destinations[index]]),
   );
-  const shuffledWells = availableWells.sort(() => Math.random() - 0.5);
-  const shuffledWellMap = new Map<number, number>();
-  const currentWells = new Set(
-    wellAnnotations
-      .flatMap((annotation) => annotation.wells)
-      .filter((well) => !excludedWells.includes(well) || well >= plateSize),
-  );
-  currentWells.forEach((well) => {
-    const destinationWell = shuffledWells.pop();
-    if (destinationWell === undefined) {
-      throw new Error(
-        `Failed to map well ${well} to a destination well. This is likely due to an invalid well index or excluded wells.`,
-      );
-    }
-    shuffledWellMap.set(well, destinationWell);
-  });
-
   return wellAnnotations.map((annotation) => ({
     ...annotation,
-    wells: annotation.wells.map((well) => {
-      if (excludedWells.includes(well)) {
-        return well;
-      }
-      const destinationWell = shuffledWellMap.get(well);
-      if (destinationWell === undefined) {
-        throw new Error(
-          `Failed to map well ${well} to a destination well. This is likely due to an invalid well index or excluded wells.`,
-        );
-      }
-      return destinationWell;
-    }),
+    wells: annotation.wells.map(
+      (well) => destinationBySource.get(well) ?? well,
+    ),
   }));
 };
+
 export const getExcelLabelForWells = (
   wells: number[],
   plateSize: PlateSize,
 ): string => {
-  const sortedWells = [...wells].sort((a, b) => a - b);
+  if (wells.length === 0) return "";
+  const sorted = [...new Set(wells)].sort((left, right) => left - right);
   const labels: string[] = [];
-  let start = sortedWells[0];
-  let prev = start;
-
-  for (let i = 1; i <= sortedWells.length; i++) {
-    if (i === sortedWells.length || sortedWells[i] !== prev + 1) {
+  let start = sorted[0];
+  let previous = start;
+  for (let index = 1; index <= sorted.length; index += 1) {
+    const current = sorted[index];
+    if (current !== previous + 1) {
       const startLabel = indexToExcelCell(start, plateSize);
-      const endLabel = indexToExcelCell(prev, plateSize);
-      labels.push(start === prev ? startLabel : `${startLabel}:${endLabel}`);
-      start = sortedWells[i];
+      const endLabel = indexToExcelCell(previous, plateSize);
+      labels.push(
+        start === previous ? startLabel : `${startLabel}:${endLabel}`,
+      );
+      start = current;
     }
-    prev = sortedWells[i];
+    previous = current;
   }
-
   return labels.join(", ");
-};
-export const getColLabel = (col: number) => `${col + 1}`;
-export const getRowLabel = (row: number) => {
-  if (row <= 25) {
-    return String.fromCharCode(65 + row);
-  } else {
-    const firstChar = String.fromCharCode(64 + Math.floor(row / 26));
-    const secondChar = String.fromCharCode(65 + (row % 26));
-    return `${firstChar}${secondChar}`;
-  }
-};
-
-export const csvCellToIndex = (cell: string, plateSize: PlateSize) => {
-  const { cols } = plateSizeToRowsCols(plateSize);
-  const row = cell.charCodeAt(0) - 65;
-  const col = parseInt(cell.slice(1)) - 1;
-  return row * cols + col;
 };
 
 export const wellAnnotationsToList = (
-  wellAnnotations: WellAnnotation<Record<string, string>>[],
+  wellAnnotations: WellAnnotation[],
   plateSize: PlateSize,
 ): WellAnnotationCSVRow[] => {
-  const annotationMap = new Map<number, WellAnnotationCSVRow>();
-
-  // Initialize the map with empty arrays for all wells
-  for (let i = 0; i < plateSize; i++) {
-    annotationMap.set(i, {
-      Well: indexToExcelCell(i, plateSize),
-      Annotations: "",
-    });
+  const rows = Array.from({ length: plateSize }, (_, index) => ({
+    Well: indexToExcelCell(index, plateSize),
+    Annotations: "",
+  }));
+  for (const annotation of wellAnnotations) {
+    for (const well of annotation.wells) {
+      if (well < 0 || well >= plateSize) continue;
+      const current = rows[well];
+      current.Annotations = [current.Annotations, annotation.label]
+        .filter(Boolean)
+        .join(" | ");
+      Object.assign(current, annotation.metadata ?? {});
+    }
   }
+  return rows;
+};
 
-  // Populate the map with annotations
-  wellAnnotations.map((annotation) => {
-    annotation.wells.forEach((wellIndex) => {
-      const prevAnnotations = annotationMap.get(wellIndex)?.Annotations
-        ? `${annotationMap.get(wellIndex)?.Annotations} |`
-        : "";
-      const update = {
-        ...annotationMap.get(wellIndex),
-        Well: indexToExcelCell(wellIndex, plateSize),
-        Annotations: `${prevAnnotations} ${annotation.label}`,
-        ...annotation.metadata,
-      };
-
-      annotationMap.set(wellIndex, update);
-    });
-  });
-
-  // Convert to the desired output format
-  return Array.from(annotationMap, ([, record]) => {
-    return record;
-  });
+const csvCell = (value: string | number): string => {
+  const text = String(value);
+  return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 };
 
 export const wellAnnotationsToCSV = (
-  wellAnnotations: WellAnnotation<Record<string, string>>[],
+  wellAnnotations: WellAnnotation[],
   plateSize: PlateSize,
-) => {
+): string => {
   const { rows, cols } = plateSizeToRowsCols(plateSize);
-  const plateMap: string[][] = Array(rows)
-    .fill(null)
-    .map(() => Array(cols).fill(""));
-  Array.from({ length: rows }).forEach((_, i) => {
-    Array.from({ length: cols }).forEach((_, j) => {
-      const index = i * cols + j;
-      const annotationsForWell = wellAnnotations.filter((ann) =>
-        ann.wells.includes(index),
-      );
-      const annotationString = annotationsForWell.map((ann) => {
-        const metadataString = Object.entries(ann.metadata ?? {})
-          .map(([key, value]) => `${key}: ${value}`)
-          .join("; ");
-        const annStr = `${ann.label} (${metadataString})`;
-        return annStr;
-      });
-
-      plateMap[i][j] = annotationString.join(" | ");
-    });
-  });
-
-  const headerRow = Array(cols + 1)
-    .fill(0)
-    .map((_, i) => {
-      if (i === 0) {
-        return "idx";
-      }
-      return i;
-    });
-  const csvRows = [
-    headerRow,
-    ...plateMap.map((row, i) => [getRowLabel(i), ...row]),
+  const annotationsByWell = new Map<number, WellAnnotation[]>();
+  for (const annotation of wellAnnotations) {
+    for (const well of annotation.wells) {
+      const current = annotationsByWell.get(well) ?? [];
+      annotationsByWell.set(well, [...current, annotation]);
+    }
+  }
+  const csvRows: Array<Array<string | number>> = [
+    ["idx", ...Array.from({ length: cols }, (_, index) => index + 1)],
   ];
-
-  return csvRows.map((row) => row.join(",")).join("\n");
+  for (let row = 0; row < rows; row += 1) {
+    const cells = Array.from({ length: cols }, (_, column) => {
+      const annotations = annotationsByWell.get(row * cols + column) ?? [];
+      return annotations
+        .map((annotation) => {
+          const metadata = Object.entries(annotation.metadata ?? {})
+            .map(([key, value]) => `${key}: ${value ?? ""}`)
+            .join("; ");
+          return metadata
+            ? `${annotation.label} (${metadata})`
+            : annotation.label;
+        })
+        .join(" | ");
+    });
+    csvRows.push([getRowLabel(row), ...cells]);
+  }
+  return csvRows.map((row) => row.map(csvCell).join(",")).join("\n");
 };
 
-// Return a list of row labels for the given plate size
-// e.g. for a 96-well plate, the row labels would be A-H
-// and for a 384-well plate, the row labels would be A-P
-export const getRowLabels = (plateSize: PlateSize) => {
+export const getRowLabels = (plateSize: PlateSize): string[] => {
   const { rows } = plateSizeToRowsCols(plateSize);
-  return Array.from({ length: rows }, (_, i) => String.fromCharCode(65 + i));
+  return Array.from({ length: rows }, (_, index) => getRowLabel(index));
 };

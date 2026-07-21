@@ -10,6 +10,7 @@
 
   --color-well-selected: var(--color-fuchsia-200);
   --color-well-excluded: var(--color-zinc-300);
+  --color-well-hovered: var(--color-fuchsia-300);
 
   --color-header-border: var(--color-zinc-800);
   --color-header-text: var(--color-zinc-800);
@@ -21,8 +22,33 @@
   --color-selection-border: var(--color-fuchsia-500);
 }
 
+.platemap-annotation-blue {
+  background: var(--color-blue-400);
+}
+.platemap-annotation-cyan {
+  background: var(--color-cyan-400);
+}
+.platemap-annotation-gray {
+  background: var(--color-gray-400);
+}
+.platemap-annotation-green {
+  background: var(--color-green-400);
+}
+.platemap-annotation-orange {
+  background: var(--color-orange-400);
+}
+.platemap-annotation-purple {
+  background: var(--color-purple-400);
+}
+.platemap-annotation-red {
+  background: var(--color-red-400);
+}
+.platemap-annotation-yellow {
+  background: var(--color-yellow-400);
+}
+
 .selecto-selection {
-  background: var(--color-selection-box) !important;
-  border: 2px solid var(--color-selection-border) !important;
-  opacity: 0.5 !important;
+  background: var(--color-selection-box);
+  border: 2px solid var(--color-selection-border);
+  opacity: 0.5;
 }
