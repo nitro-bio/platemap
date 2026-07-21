@@ -181,7 +181,8 @@ Isometric mode is a read-only overview made from the same DOM-based plate-map re
 - Every plane shows its wells, annotation rendering, global selection, exclusions, and layer name.
 - Do not show row or column coordinate headers on the planes.
 - The complete stack remains present while scrubbing.
-- Changing focus translates the stack so the active layer moves into the foreground focus position while layers before and after it recede on opposite sides without changing their order.
+- Planes fan evenly to the right and upward in stored layer order, with stable geometry that does not move or resize when the active layer changes.
+- Changing focus raises and emphasizes the active plane without changing the position or relative order of any plane.
 - CSS transitions animate discrete focus changes and must respect `prefers-reduced-motion`.
 - The implementation uses React DOM and CSS transforms only; no canvas or WebGL.
 
