@@ -71,6 +71,10 @@ export const validatePlateState = <WellMetaT extends AnnotationMetadata>(
   }
   if (state.selection) {
     assertWells(state.selection.wells, state.plateSize, "Selected wells");
+    const excluded = new Set(state.excludedWells);
+    if (state.selection.wells.some((well) => excluded.has(well))) {
+      throw new Error("Selected wells cannot be excluded");
+    }
   }
   return state;
 };

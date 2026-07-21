@@ -10,7 +10,7 @@ import {
 const state = (): PlateState<{ concentration: number; active: boolean }> => ({
   plateSize: 96,
   excludedWells: [95],
-  selection: { wells: [0, 95] },
+  selection: { wells: [0] },
   activeWellAnnotation: null,
   wellAnnotations: [
     {
@@ -32,6 +32,9 @@ describe("plate state invariants", () => {
     expect(() =>
       validatePlateState({ ...state(), excludedWells: [1, 1] }),
     ).toThrow("unique");
+    expect(() =>
+      validatePlateState({ ...state(), excludedWells: [0, 95] }),
+    ).toThrow("Selected wells cannot be excluded");
   });
 
   test("rejects lossy resize unless the caller explicitly resolves content", () => {
