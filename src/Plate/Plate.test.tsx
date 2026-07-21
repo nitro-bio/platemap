@@ -1,33 +1,68 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { useState } from "react";
 import { afterEach, describe, expect, test } from "vitest";
+
 import { Plate } from "./Plate";
-import type { PlateSelection } from "./schemas";
+import { PlateControls } from "./PlateControls";
+import { usePlateReducer } from "./hooks/usePlateReducer";
+import { BLUE_STYLE, ORANGE_STYLE, type PlateLayer } from "./schemas";
 
 afterEach(cleanup);
 
-function Harness() {
-  const [selection, setSelection] = useState<PlateSelection | null>(null);
+const LAYER_ONE = "00000000-0000-4000-8000-000000000001";
+const LAYER_TWO = "00000000-0000-4000-8000-000000000002";
+const ANNOTATION_ONE = "00000000-0000-4000-8000-000000000003";
+const ANNOTATION_TWO = "00000000-0000-4000-8000-000000000004";
+
+const layers: PlateLayer[] = [
+  {
+    id: LAYER_ONE,
+    name: "Layer 1",
+    annotations: [
+      {
+        id: ANNOTATION_ONE,
+        label: "Control",
+        wells: [0],
+        annotationStyle: ORANGE_STYLE,
+      },
+    ],
+  },
+  {
+    id: LAYER_TWO,
+    name: "Layer 2",
+    annotations: [
+      {
+        id: ANNOTATION_TWO,
+        label: "Treatment",
+        wells: [0],
+        annotationStyle: BLUE_STYLE,
+      },
+    ],
+  },
+];
+
+function Harness({ isometric = false }: { isometric?: boolean }) {
+  const reducer = usePlateReducer({
+    initialPlateSize: 24,
+    initialLayers: layers,
+    initialExcludedWells: [1],
+    initialViewMode: isometric ? "isometric" : "flat",
+  });
   return (
-    <Plate
-      plateSize={24}
-      excludedWells={[1]}
-      selection={selection}
-      setSelection={({ selection: next }) => setSelection(next)}
-      wellAnnotations={[]}
-      activeWellAnnotation={null}
-      setWellAnnotations={() => undefined}
-      setActiveWellAnnotation={() => undefined}
-    />
+    <>
+      <Plate {...reducer} />
+      <PlateControls {...reducer} />
+    </>
   );
 }
 
-describe("Plate accessibility", () => {
-  test("names wells and supports native keyboard selection", () => {
+describe("Plate accessibility and layers", () => {
+  test("renders only the active layer and supports native selection", () => {
     render(<Harness />);
-    const well = screen.getByRole("button", { name: "A1" });
+    const well = screen.getByRole("button", {
+      name: "A1, annotations: Control",
+    });
+    expect(screen.queryByText("Treatment")).toBeNull();
     expect(well.getAttribute("aria-pressed")).toBe("false");
-    fireEvent.keyDown(well, { key: "Enter" });
     fireEvent.click(well);
     expect(well.getAttribute("aria-pressed")).toBe("true");
   });
@@ -35,15 +70,63 @@ describe("Plate accessibility", () => {
   test("disables excluded wells and labels row and column controls", () => {
     render(<Harness />);
     expect(
-      (
-        screen.getByRole("button", {
-          name: "A2, excluded",
-        }) as HTMLButtonElement
-      ).disabled,
+      (screen.getByRole("button", { name: "A2, excluded" }) as HTMLButtonElement).disabled,
     ).toBe(true);
     expect(screen.getByRole("button", { name: "Select row A" })).toBeTruthy();
-    expect(
-      screen.getByRole("button", { name: "Select column 1" }),
-    ).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Select column 1" })).toBeTruthy();
   });
+
+  test("renders read-only isometric planes and synchronizes focus", () => {
+    render(<Harness isometric />);
+    expect(screen.getByRole("region", { name: "Isometric plate stack" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "A1, annotations: Control" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "View layer Layer 2" }));
+    expect(
+      screen.getByRole("slider", { name: "Active layer" }).getAttribute("aria-valuetext"),
+    ).toBe("Layer 2");
+  });
+
+  test("shows a four-part overflow representation while naming all annotations", () => {
+    const overflowLayers: PlateLayer[] = [{
+      id: LAYER_ONE,
+      name: "Overflow",
+      annotations: Array.from({ length: 6 }, (_, index) => ({
+        id: `00000000-0000-4000-8000-${String(index + 10).padStart(12, "0")}`,
+        label: `Annotation ${index + 1}`,
+        wells: [0],
+        annotationStyle: BLUE_STYLE,
+      })),
+    }];
+    function OverflowHarness() {
+      const reducer = usePlateReducer({ initialPlateSize: 24, initialLayers: overflowLayers });
+      return <Plate {...reducer} />;
+    }
+    const { container } = render(<OverflowHarness />);
+    expect(container.querySelectorAll('[data-well-index="0"] span[class*="platemap-annotation-"]')).toHaveLength(4);
+    expect(screen.getByRole("button", { name: /Annotation 6.*3 additional annotations/ })).toBeTruthy();
+  });
+
+  test("renders and changes focus across eight 1,536-well planes", () => {
+    const denseLayers: PlateLayer[] = Array.from({ length: 8 }, (_, index) => ({
+      id: `10000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
+      name: `Dense ${index + 1}`,
+      annotations: [],
+    }));
+    function DenseHarness() {
+      const reducer = usePlateReducer({
+        initialPlateSize: 1536,
+        initialLayers: denseLayers,
+        initialViewMode: "isometric",
+      });
+      return <Plate {...reducer} />;
+    }
+    const { container } = render(<DenseHarness />);
+    expect(container.querySelectorAll('[data-well-index="1535"]')).toHaveLength(8);
+    fireEvent.click(screen.getByRole("button", { name: "View layer Dense 8" }));
+    expect(
+      screen.getByRole("button", { name: "View layer Dense 8" }).getAttribute(
+        "aria-current",
+      ),
+    ).toBe("true");
+  }, 20_000);
 });

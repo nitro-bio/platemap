@@ -27,7 +27,8 @@
     "prepublishOnly": "pnpm test && pnpm build"
   },
   "dependencies": {
-    "react-selecto": "^1.26.3"
+    "react-selecto": "^1.26.3",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.4",
