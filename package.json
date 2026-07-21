@@ -17,7 +17,7 @@
     "dev": "vite --port 3000",
     "lint": "biome check . && tsc --noEmit",
     "lint:fix": "biome check . --write --unsafe && tsc --noEmit",
-    "format": "biome format . --check",
+    "format": "biome format .",
     "format:fix": "biome format . --write",
     "build": "pnpm lint && vite build && pnpm build-css",
     "build:ci": "vite build && pnpm build-css",
