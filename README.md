@@ -11,7 +11,7 @@ Built for [Nitro Bio's BioGraphics](https://biographics.nitro.bio/) and [PlatePl
 - Model a plate as an ordered stack of independently editable layers
 - Select individual wells, rows, columns, or drag across a range
 - Create annotations from the current selection and update existing annotations
-- Switch between an editable flat view and a read-only isometric stack
+- Switch between an editable flat view and a read-only layers view
 - Add, rename, reorder, and delete layers with accessible controls
 - Import and export tidy CSV data or a versioned JSON document
 - Customize the interface with semantic `--platemap-*` CSS variables
@@ -55,11 +55,11 @@ The demo includes a complete [well annotation editor example](src/WellAnnotation
 
 The editor composes the public reducer API: it reads `plateState.selection` and the active layer, then persists a new annotation array with `plateActions.setLayerAnnotations`. `plateActions.setActiveWellAnnotation` tracks which annotation the surrounding interface is editing.
 
-## Layered views
+## Layers view
 
-Flat view renders and edits the active layer, including overlapping color-coded well annotations. Isometric view renders the complete annotated stack as a read-only overview with layer navigation.
+Flat view renders and edits the active layer, including overlapping color-coded well annotations. Layers view renders the complete annotated stack as a read-only overview with layer navigation.
 
-![Nitro Platemap isometric view with two layers](docs/screenshots/isometric-view.jpg)
+![Nitro Platemap layers view with two layers](docs/screenshots/layers-view.jpg)
 
 `PlateControls` includes layer creation, activation, inline rename, accessible reordering, delete confirmation, view switching, and file import/export.
 

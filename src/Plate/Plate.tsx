@@ -89,9 +89,9 @@ export const Plate = <WellMetaT extends Record<string, unknown>>({
   }
   return (
     <section
-      aria-label="Isometric plate stack"
+      aria-label="Layer stack"
       aria-roledescription="circular layer carousel"
-      className={cn("platemap-isometric-stack", className)}
+      className={cn("platemap-layers-stack", className)}
       tabIndex={0}
       onKeyDown={handleCarouselKeyDown}
       onWheel={handleCarouselWheel}
@@ -113,7 +113,7 @@ export const Plate = <WellMetaT extends Record<string, unknown>>({
             aria-current={
               layer.id === plateState.activeLayerId ? "true" : undefined
             }
-            className="platemap-isometric-plane"
+            className="platemap-layers-plane"
             style={
               {
                 "--platemap-layer-index": carouselIndex,

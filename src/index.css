@@ -114,7 +114,7 @@
   color: var(--color-header-hover-text);
 }
 
-.platemap-isometric-stack {
+.platemap-layers-stack {
   isolation: isolate;
   min-height: clamp(38rem, 62vw, 56rem);
   overflow: hidden;
@@ -125,7 +125,7 @@
   transform-style: preserve-3d;
 }
 
-.platemap-isometric-plane {
+.platemap-layers-plane {
   background: transparent;
   border: 0;
   cursor: pointer;
@@ -156,18 +156,18 @@
   z-index: var(--platemap-layer-z);
 }
 
-.platemap-isometric-plane[aria-current="true"] {
+.platemap-layers-plane[aria-current="true"] {
   filter: none;
   opacity: 1;
   z-index: calc(var(--platemap-layer-count) + 1);
 }
 
-.platemap-isometric-plane:focus-visible {
+.platemap-layers-plane:focus-visible {
   outline: 3px solid var(--platemap-control-focus);
   outline-offset: 4px;
 }
 
-.platemap-isometric-plane .plate-container {
+.platemap-layers-plane .plate-container {
   background: var(--color-plate-background);
   border: 1px solid var(--color-plate-foreground);
   border-radius: 0.75rem;
@@ -178,7 +178,7 @@
   padding: 1rem;
 }
 
-.platemap-isometric-plane[aria-current="true"] .plate-container {
+.platemap-layers-plane[aria-current="true"] .plate-container {
   outline: 3px solid var(--platemap-control-focus);
   outline-offset: 3px;
 }
@@ -310,7 +310,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .platemap-isometric-plane {
+  .platemap-layers-plane {
     transition: none;
   }
 }

@@ -39,12 +39,12 @@ const layers: PlateLayer[] = [
   },
 ];
 
-function Harness({ isometric = false }: { isometric?: boolean }) {
+function Harness({ showLayers = false }: { showLayers?: boolean }) {
   const reducer = usePlateReducer({
     initialPlateSize: 24,
     initialLayers: layers,
     initialExcludedWells: [1],
-    initialViewMode: isometric ? "isometric" : "flat",
+    initialViewMode: showLayers ? "layers" : "flat",
   });
   return (
     <>
@@ -89,11 +89,9 @@ describe("Plate accessibility and layers", () => {
     ).toBeTruthy();
   });
 
-  test("renders read-only isometric planes and synchronizes focus", () => {
-    const { container } = render(<Harness isometric />);
-    expect(
-      screen.getByRole("region", { name: "Isometric plate stack" }),
-    ).toBeTruthy();
+  test("renders read-only layer planes and synchronizes focus", () => {
+    const { container } = render(<Harness showLayers />);
+    expect(screen.getByRole("region", { name: "Layer stack" })).toBeTruthy();
     expect(
       screen.queryByRole("button", { name: "A1, annotations: Control" }),
     ).toBeNull();
@@ -107,17 +105,16 @@ describe("Plate accessibility and layers", () => {
     expect(
       screen.getByRole("status", { name: "Active layer" }).textContent,
     ).toBe("Layer 1 · 1 of 2");
-    fireEvent.keyDown(
-      screen.getByRole("region", { name: "Isometric plate stack" }),
-      { key: "ArrowLeft" },
-    );
+    fireEvent.keyDown(screen.getByRole("region", { name: "Layer stack" }), {
+      key: "ArrowLeft",
+    });
     expect(
       screen.getByRole("status", { name: "Active layer" }).textContent,
     ).toBe("Layer 2 · 2 of 2");
-    fireEvent.wheel(
-      screen.getByRole("region", { name: "Isometric plate stack" }),
-      { deltaX: 80, deltaY: 0 },
-    );
+    fireEvent.wheel(screen.getByRole("region", { name: "Layer stack" }), {
+      deltaX: 80,
+      deltaY: 0,
+    });
     expect(
       screen.getByRole("status", { name: "Active layer" }).textContent,
     ).toBe("Layer 1 · 1 of 2");
@@ -166,7 +163,7 @@ describe("Plate accessibility and layers", () => {
       const reducer = usePlateReducer({
         initialPlateSize: 1536,
         initialLayers: denseLayers,
-        initialViewMode: "isometric",
+        initialViewMode: "layers",
       });
       return <Plate {...reducer} />;
     }
