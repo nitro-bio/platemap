@@ -8,25 +8,25 @@
   --color-well-background: var(--color-zinc-100);
   --color-well-foreground: var(--color-zinc-600);
 
-  --color-well-selected: var(--color-fuchsia-200);
+  --color-well-selected: var(--color-zinc-200);
   --color-well-excluded: var(--color-zinc-300);
-  --color-well-hovered: var(--color-fuchsia-300);
+  --color-well-hovered: var(--color-zinc-300);
 
   --color-header-border: var(--color-zinc-800);
   --color-header-text: var(--color-zinc-800);
 
-  --color-header-hover-bg: var(--color-fuchsia-200);
+  --color-header-hover-bg: var(--color-zinc-200);
   --color-header-hover-text: var(--color-zinc-800);
 
-  --color-selection-box: var(--color-fuchsia-200);
-  --color-selection-border: var(--color-fuchsia-500);
+  --color-selection-box: var(--color-zinc-200);
+  --color-selection-border: var(--color-zinc-900);
 
   --color-control-background: var(--color-white);
   --color-control-border: var(--color-zinc-300);
   --color-control-text: var(--color-zinc-900);
-  --color-control-active: var(--color-fuchsia-100);
+  --color-control-active: var(--color-zinc-100);
   --color-control-destructive: var(--color-red-700);
-  --color-control-focus: var(--color-fuchsia-500);
+  --color-control-focus: var(--color-zinc-900);
 }
 
 :root {
@@ -47,7 +47,7 @@
   --platemap-control-background: var(--color-zinc-900);
   --platemap-control-border: var(--color-zinc-700);
   --platemap-control-text: var(--color-zinc-100);
-  --platemap-control-active: var(--color-fuchsia-950);
+  --platemap-control-active: var(--color-zinc-800);
   --platemap-overflow-background: #000;
   --platemap-overflow-text: #fafafa;
 }

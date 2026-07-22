@@ -79,7 +79,7 @@ const App = () => {
   return (
     <main className="mx-auto max-w-6xl space-y-8 p-8">
       <header className="space-y-2">
-        <p className="text-sm font-semibold uppercase tracking-widest text-fuchsia-700">
+        <p className="text-sm font-semibold uppercase tracking-widest text-zinc-900">
           Interactive example
         </p>
         <h1 className="text-3xl font-bold">Build a layered plate map</h1>
