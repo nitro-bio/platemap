@@ -8,25 +8,25 @@
   --color-well-background: var(--color-zinc-100);
   --color-well-foreground: var(--color-zinc-600);
 
-  --color-well-selected: var(--color-fuchsia-200);
+  --color-well-selected: var(--color-zinc-200);
   --color-well-excluded: var(--color-zinc-300);
-  --color-well-hovered: var(--color-fuchsia-300);
+  --color-well-hovered: var(--color-zinc-300);
 
   --color-header-border: var(--color-zinc-800);
   --color-header-text: var(--color-zinc-800);
 
-  --color-header-hover-bg: var(--color-fuchsia-200);
+  --color-header-hover-bg: var(--color-zinc-200);
   --color-header-hover-text: var(--color-zinc-800);
 
-  --color-selection-box: var(--color-fuchsia-200);
-  --color-selection-border: var(--color-fuchsia-500);
+  --color-selection-box: var(--color-zinc-200);
+  --color-selection-border: var(--color-zinc-900);
 
   --color-control-background: var(--color-white);
   --color-control-border: var(--color-zinc-300);
   --color-control-text: var(--color-zinc-900);
-  --color-control-active: var(--color-fuchsia-100);
+  --color-control-active: var(--color-zinc-100);
   --color-control-destructive: var(--color-red-700);
-  --color-control-focus: var(--color-fuchsia-500);
+  --color-control-focus: var(--color-zinc-900);
 }
 
 :root {
@@ -47,7 +47,7 @@
   --platemap-control-background: var(--color-zinc-900);
   --platemap-control-border: var(--color-zinc-700);
   --platemap-control-text: var(--color-zinc-100);
-  --platemap-control-active: var(--color-fuchsia-950);
+  --platemap-control-active: var(--color-zinc-800);
   --platemap-overflow-background: #000;
   --platemap-overflow-text: #fafafa;
 }
@@ -114,7 +114,7 @@
   color: var(--color-header-hover-text);
 }
 
-.platemap-isometric-stack {
+.platemap-layers-stack {
   isolation: isolate;
   min-height: clamp(38rem, 62vw, 56rem);
   overflow: hidden;
@@ -125,7 +125,7 @@
   transform-style: preserve-3d;
 }
 
-.platemap-isometric-plane {
+.platemap-layers-plane {
   background: transparent;
   border: 0;
   cursor: pointer;
@@ -156,18 +156,18 @@
   z-index: var(--platemap-layer-z);
 }
 
-.platemap-isometric-plane[aria-current="true"] {
+.platemap-layers-plane[aria-current="true"] {
   filter: none;
   opacity: 1;
   z-index: calc(var(--platemap-layer-count) + 1);
 }
 
-.platemap-isometric-plane:focus-visible {
+.platemap-layers-plane:focus-visible {
   outline: 3px solid var(--platemap-control-focus);
   outline-offset: 4px;
 }
 
-.platemap-isometric-plane .plate-container {
+.platemap-layers-plane .plate-container {
   background: var(--color-plate-background);
   border: 1px solid var(--color-plate-foreground);
   border-radius: 0.75rem;
@@ -178,7 +178,7 @@
   padding: 1rem;
 }
 
-.platemap-isometric-plane[aria-current="true"] .plate-container {
+.platemap-layers-plane[aria-current="true"] .plate-container {
   outline: 3px solid var(--platemap-control-focus);
   outline-offset: 3px;
 }
@@ -310,7 +310,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .platemap-isometric-plane {
+  .platemap-layers-plane {
     transition: none;
   }
 }

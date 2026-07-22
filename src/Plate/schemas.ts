@@ -73,7 +73,7 @@ export type WellAnnotationCSVRow = {
 
 export type PlateSize = 24 | 48 | 96 | 384 | 1536;
 
-export type PlateViewMode = "flat" | "isometric";
+export type PlateViewMode = "flat" | "layers";
 
 export interface PlateLayer<
   T extends Record<string, unknown> = AnnotationMetadata,

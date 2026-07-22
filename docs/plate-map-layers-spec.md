@@ -9,7 +9,7 @@
 
 ## Summary
 
-Replace the flat annotation collection with ordered, independently editable plate-map layers. In flat mode, the plate displays and edits only the active layer. A read-only isometric mode displays every layer as an exploded stack of plate maps and lets the user cycle or click through the stack to change the active layer.
+Replace the flat annotation collection with ordered, independently editable plate-map layers. In flat mode, the plate displays and edits only the active layer. A read-only layers view displays every layer as an exploded stack of plate maps and lets the user cycle or click through the stack to change the active layer.
 
 The library remains controlled through a canonical `usePlateReducer` state engine. `Plate` and a new `PlateControls` component receive the reducer's grouped `plateState` and `plateActions` objects. `PlateControls` provides the opinionated, shadcn-style reference UI for the complete layer lifecycle and file import/export, while visual customization is exposed through semantic CSS variables and a root `className`.
 
@@ -18,7 +18,7 @@ The library remains controlled through a canonical `usePlateReducer` state engin
 - Give every annotation exactly one layer owner.
 - Support creating, activating, renaming, reordering, and deleting layers.
 - Make the active layer the sole annotation layer displayed and edited in flat mode.
-- Provide a read-only isometric view of the complete ordered layer stack.
+- Provide a read-only layers view of the complete ordered layer stack.
 - Preserve a global well selection while switching layers and views.
 - Support simple per-layer CSV interchange and lossless, versioned JSON documents.
 - Provide a validated migration path from the v2 flat `PlateState` shape.
@@ -31,7 +31,7 @@ The library remains controlled through a canonical `usePlateReducer` state engin
 - Assigning one annotation object to multiple layers.
 - Layer visibility or hidden-layer state.
 - Per-layer well selections.
-- Editing, well selection, or annotation mutation in isometric mode.
+- Editing, well selection, or annotation mutation in layers view.
 - Drag-and-drop layer reordering; accessible move buttons are sufficient for v1.
 - User-defined ordering of annotations within a layer.
 - Canvas, WebGL, or rasterized plate rendering.
@@ -42,10 +42,10 @@ The library remains controlled through a canonical `usePlateReducer` state engin
 ## Terminology and Ordering
 
 - A **layer** is a named collection of well annotations.
-- The **active layer** is the layer shown and edited in flat mode and focused in isometric mode.
+- The **active layer** is the layer shown and edited in flat mode and focused in layers view.
 - `layers` is stored in visual top-to-bottom order. `layers[0]` is the top layer.
 - New layers are inserted at index `0`, become active immediately, and appear at the top of `PlateControls`.
-- Reordering changes the array order and the order of planes in the isometric stack.
+- Reordering changes the array order and the order of planes in the layers stack.
 - Annotation order within a layer is stable array/insertion order.
 
 ## Public Data Model
@@ -53,7 +53,7 @@ The library remains controlled through a canonical `usePlateReducer` state engin
 The exact declarations may be adjusted for TypeScript ergonomics, but the public model must be equivalent to:
 
 ```ts
-export type PlateViewMode = "flat" | "isometric";
+export type PlateViewMode = "flat" | "layers";
 
 export interface PlateLayer<
   WellMetaT extends Record<string, unknown> = AnnotationMetadata,
@@ -171,9 +171,9 @@ Remove the unvalidated `setPlateState` escape hatch. `replacePlateState` validat
 - The overflow segment uses a pure white background with dark text in light mode and a pure black background with light text in dark mode.
 - Accessible well text must announce every annotation, not only the three visible colors, and must communicate the overflow count without duplicating labels.
 
-## Isometric View
+## Layers View
 
-Isometric mode is a read-only overview made from the same DOM-based plate-map rendering, transformed with CSS. It must work for every existing plate size, including the performance target of eight 1,536-well layers.
+Layers view is a read-only overview made from the same DOM-based plate-map rendering, transformed with CSS. It must work for every existing plate size, including the performance target of eight 1,536-well layers.
 
 ### Presentation
 
@@ -188,12 +188,12 @@ Isometric mode is a read-only overview made from the same DOM-based plate-map re
 
 ### Interaction
 
-- Isometric wells are read-only: they cannot modify selection or annotations.
+- Wells in layers view are read-only: they cannot modify selection or annotations.
 - Previous and next controls cycle through layers without terminal disabled states, wrapping in both directions.
 - Horizontal trackpad scrolling and left/right arrow keys provide the same circular navigation while the stack is focused.
 - Cycling changes `activeLayerId`; no separate focused-layer state is required.
 - Clicking a layer plane also makes that layer active.
-- Entering or leaving isometric mode preserves the active layer and global selection.
+- Entering or leaving layers view preserves the active layer and global selection.
 - Returning to flat mode displays the newly active layer and permits normal editing.
 
 ## `PlateControls`
@@ -223,8 +223,8 @@ Export a single opinionated, customizable `PlateControls` component. Do not expo
 
 ### View UI
 
-- Provide a `flat`/`isometric` view toggle.
-- Show circular previous/next navigation and an explicit `Layer N of M` status in isometric mode.
+- Provide a `flat`/`layers` view toggle.
+- Show circular previous/next navigation and an explicit `Layer N of M` status in layers view.
 - Keep the layer list and circular navigation synchronized through `activeLayerId`.
 - Expose accessible names and current values for the toggle, status, and navigation controls.
 
@@ -323,20 +323,20 @@ Add `zod` as a runtime dependency and publicly export:
 - Reorder buttons require explicit layer-specific accessible names and correct disabled states.
 - Inline rename and delete confirmation must be keyboard operable and restore focus sensibly on completion or cancellation.
 - The view toggle exposes its current mode.
-- The isometric navigator announces the active layer name and its position, wraps in both directions, and supports buttons, horizontal scrolling, and left/right arrow keys.
-- Isometric layer planes are keyboard activatable even though their wells are not interactive.
-- Isometric transforms must not determine DOM reading order; reading order follows the top-to-bottom layer array.
+- The layers navigator announces the active layer name and its position, wraps in both directions, and supports buttons, horizontal scrolling, and left/right arrow keys.
+- Layers layer planes are keyboard activatable even though their wells are not interactive.
+- Layers transforms must not determine DOM reading order; reading order follows the top-to-bottom layer array.
 - Color is never the only indicator of active state, selection, errors, or destructive confirmation.
 
 ## Performance and Responsive Behavior
 
 - Supported plate sizes remain 24, 48, 96, 384, and 1,536 wells.
-- The target worst case is eight layers at 1,536 wells in isometric mode.
+- The target worst case is eight layers at 1,536 wells in layers view.
 - Avoid repeated per-well scans across every layer during render; pre-index annotations by layer and well with memoized derived data.
 - Flat mode should render only one plate grid, regardless of layer count.
-- Isometric rendering may render all planes but should avoid mounting interactive selection machinery such as one `Selecto` instance per plane.
+- Layers rendering may render all planes but should avoid mounting interactive selection machinery such as one `Selecto` instance per plane.
 - Keep animation limited to transforms and opacity where possible.
-- The isometric container must reserve or calculate sufficient space for exploded offsets, avoid clipping the focused layer, and remain usable at narrow widths through scaling and/or contained overflow.
+- The layers container must reserve or calculate sufficient space for exploded offsets, avoid clipping the focused layer, and remain usable at narrow widths through scaling and/or contained overflow.
 
 ## Error Handling
 
@@ -374,7 +374,7 @@ Add `zod` as a runtime dependency and publicly export:
 
 - Flat mode renders only active-layer annotations.
 - One-to-four segment rendering and five-plus `+N` overflow behavior in light and dark themes.
-- Isometric mode renders every layer plane, names it, omits coordinate headers, and disables well editing.
+- Layers view renders every layer plane, names it, omits coordinate headers, and disables well editing.
 - Scrubber and plane activation synchronize active state.
 - Layer controls have correct accessible names, current state, disabled boundaries, focus behavior, and inline confirmations.
 - CSV/JSON file actions call the expected transitions and surface errors.
@@ -387,14 +387,14 @@ Add `zod` as a runtime dependency and publicly export:
 ## Documentation and Demo
 
 - Update the demo app to exercise the canonical `usePlateReducer` integration.
-- Demonstrate layer creation, activation, inline rename, reordering, deletion, flat/isometric switching, circular navigation, annotation overflow, CSV import/export, JSON round trip, and a surfaced import error.
+- Demonstrate layer creation, activation, inline rename, reordering, deletion, flat/layers switching, circular navigation, annotation overflow, CSV import/export, JSON round trip, and a surfaced import error.
 - Update the README with the v3 grouped-prop example, public data model, ordering convention, file formats, CSS variables, and links to the demo.
 - Document that v3 is intentionally breaking and that a runtime legacy migrator exists; a detailed migration guide is not required.
 
 ## Implementation Notes
 
-- Extract a reusable read-only plate-plane renderer so flat and isometric views share annotation/well visuals without duplicating selection behavior.
-- Build memoized maps from `wellIndex` to a layer's ordered annotations. Flat mode needs only the active layer's map; isometric mode needs one map per layer.
+- Extract a reusable read-only plate-plane renderer so flat and layers views share annotation/well visuals without duplicating selection behavior.
+- Build memoized maps from `wellIndex` to a layer's ordered annotations. Flat mode needs only the active layer's map; layers view needs one map per layer.
 - Keep `PlateControls` file handling thin by placing CSV and JSON parsing/serialization in exported pure utilities.
 - Export pure utilities equivalent to `parseLayerCSV`, `layerToCSV`, `plateStateToDocument`, and `plateDocumentToJSON`. Parsing utilities accept the current plate size and ID factory where required; reducer actions commit their validated results atomically.
 - Prefer reducer helpers that validate first and return a new state atomically.
@@ -408,7 +408,7 @@ The feature is ready to release when:
 - The package builds and publishes as version 2.0.0.
 - The public API has no remaining flat `wellAnnotations` state path or legacy long-form `Plate` props.
 - A consumer can manage the complete layer lifecycle with `PlateControls` and `usePlateReducer`.
-- Flat and isometric views behave consistently across all supported plate sizes.
+- Flat and layers views behave consistently across all supported plate sizes.
 - Per-layer CSV and versioned JSON workflows pass round-trip tests.
 - Legacy v2 state migrates through the exported parser/migrator.
 - Accessibility, reducer, schema, rendering, and performance-target tests pass.

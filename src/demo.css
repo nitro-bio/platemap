@@ -1,0 +1,79 @@
+.annotation-editor {
+  align-items: end;
+  border-block: 1px solid var(--color-zinc-200);
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: max-content 1fr;
+  padding-block: 1rem;
+}
+
+.annotation-editor-heading {
+  align-self: center;
+}
+
+.annotation-editor h2 {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.annotation-editor-heading p {
+  color: var(--color-zinc-500);
+  font-size: 0.8125rem;
+}
+
+.annotation-form {
+  align-items: end;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: minmax(10rem, 1fr) minmax(12rem, 1.5fr) minmax(
+      7rem,
+      0.6fr
+    ) max-content;
+}
+
+.annotation-form label {
+  display: grid;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  gap: 0.25rem;
+}
+
+.annotation-form input,
+.annotation-form select,
+.annotation-form button {
+  border: 1px solid var(--color-zinc-300);
+  border-radius: 0.375rem;
+  min-height: 2.375rem;
+  padding: 0.4rem 0.6rem;
+}
+
+.annotation-form input,
+.annotation-form select {
+  background: #fff;
+}
+
+.annotation-form input:focus-visible,
+.annotation-form select:focus-visible,
+.annotation-form button:focus-visible {
+  outline: 2px solid var(--color-zinc-900);
+  outline-offset: 2px;
+}
+
+.annotation-form button {
+  background: var(--color-zinc-900);
+  border-color: var(--color-zinc-900);
+  color: #fff;
+  font-weight: 700;
+}
+
+.annotation-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+@media (max-width: 900px) {
+  .annotation-editor,
+  .annotation-form {
+    grid-template-columns: 1fr;
+  }
+}

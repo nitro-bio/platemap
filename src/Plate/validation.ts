@@ -163,7 +163,7 @@ const runtimeStateSchema = documentBaseSchema
     activeLayerId: z.string().uuid(),
     activeWellAnnotationId: z.string().uuid().nullable(),
     selection: selectionSchema.nullable(),
-    viewMode: z.enum(["flat", "isometric"]),
+    viewMode: z.enum(["flat", "layers"]),
   })
   .superRefine((value, context) => {
     validateDurableState({ ...value, schemaVersion: 1 }, context);

@@ -252,12 +252,12 @@ export const PlateControls = <WellMetaT extends Record<string, unknown>>({
           </button>
           <button
             type="button"
-            aria-pressed={plateState.viewMode === "isometric"}
-            onClick={() => plateActions.setViewMode("isometric")}
+            aria-pressed={plateState.viewMode === "layers"}
+            onClick={() => plateActions.setViewMode("layers")}
           >
-            Isometric view
+            Layers view
           </button>
-          {plateState.viewMode === "isometric" && (
+          {plateState.viewMode === "layers" && (
             <>
               <div
                 className="platemap-layer-navigation"
