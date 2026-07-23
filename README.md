@@ -1,5 +1,11 @@
 # Nitro Platemap
 
+> [!IMPORTANT]
+> Active development has moved to
+> [`nitro-bio/nitro-bio-apps/packages/platemap`](https://github.com/nitro-bio/nitro-bio-apps/tree/main/packages/platemap).
+> This repository remains available as a read-only archive for historical
+> issues, pull requests, releases, and links.
+
 Accessible React components for building interactive laboratory plate maps. Nitro Platemap supports standard plate sizes from 24 to 1,536 wells, composable well annotations, editable layers, keyboard-friendly selection, CSV/JSON workflows, and customizable styling.
 
 Built for [Nitro Bio's BioGraphics](https://biographics.nitro.bio/) and [PlatePlanner](https://plateplanner.nitro.bio/), and available as a standalone React package.
